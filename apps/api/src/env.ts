@@ -8,6 +8,8 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(MIN_SECRET_LENGTH),
   PORT: z.coerce.number().int().positive().default(DEFAULT_PORT),
   NODE_ENV: z.string().optional(),
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  CRON_SECRET: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

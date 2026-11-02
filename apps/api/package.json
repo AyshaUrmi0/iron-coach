@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
-    "start": "tsx --env-file-if-exists=.env src/index.ts",
+    "dev": "tsx watch --env-file-if-exists=.env src/local.ts",
+    "start": "tsx --env-file-if-exists=.env src/local.ts",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@iron-coach/core": "workspace:*",
+    "@vercel/blob": "^2.8.2",
     "bcrypt": "^6.0.0",
     "express": "^5.3.0",
     "jsonwebtoken": "^9.0.3",

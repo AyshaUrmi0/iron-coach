@@ -1,9 +1,12 @@
+import path from "node:path";
 import { Router } from "express";
 import { isValidObjectId } from "mongoose";
 import { currentUser, requireAuth } from "../auth.js";
 import { HTTP_NOT_FOUND, HttpError } from "../http.js";
 import { Checkin } from "../models/checkin.js";
-import { UPLOADS_DIR } from "../selfies.js";
+import { readSelfie } from "../selfies.js";
+
+const SELFIE_NOT_FOUND = "Selfie not found.";
 
 export const selfiesRouter = Router();
 
@@ -16,10 +19,13 @@ selfiesRouter.get("/:checkinId", async (req, res) => {
   const checkin = isValidObjectId(checkinId)
     ? await Checkin.findOne({ _id: checkinId, userId: user._id })
     : null;
-  if (!checkin) throw new HttpError(HTTP_NOT_FOUND, "Selfie not found.");
+  if (!checkin) throw new HttpError(HTTP_NOT_FOUND, SELFIE_NOT_FOUND);
 
-  res.sendFile(checkin.selfiePath, {
-    root: UPLOADS_DIR,
-    headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" },
-  });
+  const bytes = await readSelfie(checkin.selfiePath);
+  if (!bytes) throw new HttpError(HTTP_NOT_FOUND, SELFIE_NOT_FOUND);
+
+  res
+    .type(path.extname(checkin.selfiePath))
+    .set({ "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" })
+    .send(bytes);
 });

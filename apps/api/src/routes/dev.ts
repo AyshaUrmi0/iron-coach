@@ -4,7 +4,7 @@ import { currentUser, requireAuth } from "../auth.js";
 import { deleteExpiredDemoUsers } from "../demo.js";
 import { HTTP_CONFLICT, HTTP_CREATED, HttpError, isDuplicateKeyError } from "../http.js";
 import { Checkin, musclesSchema } from "../models/checkin.js";
-import { writePlaceholderSelfie } from "../selfies.js";
+import { PLACEHOLDER_SELFIE_PATH } from "../selfies.js";
 
 const seedSchema = z.strictObject({
   dates: z.array(z.iso.date()).min(1),
@@ -19,7 +19,6 @@ devRouter.use(requireAuth);
 devRouter.post("/seed", async (req, res) => {
   const { dates, muscles, reset } = seedSchema.parse(req.body);
   const user = await currentUser(req);
-  const selfiePath = await writePlaceholderSelfie(user._id.toString());
 
   // shortcut: reset leaves old selfie files on disk, fine for dev-only data.
   if (reset) await Checkin.deleteMany({ userId: user._id });
@@ -29,7 +28,7 @@ devRouter.post("/seed", async (req, res) => {
       date,
       takenAt: new Date(`${date}T12:00:00Z`),
       muscles,
-      selfiePath,
+      selfiePath: PLACEHOLDER_SELFIE_PATH,
     })),
   ).catch((err: unknown) => {
     if (isDuplicateKeyError(err)) throw new HttpError(HTTP_CONFLICT, "A date is already checked in.");

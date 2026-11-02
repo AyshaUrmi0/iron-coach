@@ -38,6 +38,7 @@ User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, langua
 isDemo, demoExpiresAt }
 Check-in: { userId, date "YYYY-MM-DD" (unique per user), takenAt, muscles[], selfiePath, isSample }
 Selfies are private: only the owner can fetch them. Camera capture only, no file picker.
+Stored in private Vercel Blob when deployed (BLOB_READ_WRITE_TOKEN set), on local disk otherwise.
 
 ## Demo mode
 Anyone can explore without an account. Each visitor gets their own temporary account, never a
