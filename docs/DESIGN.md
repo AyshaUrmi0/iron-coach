@@ -1,0 +1,140 @@
+# Iron Coach: design
+
+Iron Coach is a web app with two characters: a 3D avatar of you that grows muscle when you train,
+and a loud, savage coach, Coach Iron, who roasts you when you skip.
+
+You prove each gym visit with a live selfie and say which muscles you trained, and those muscles
+grow on the avatar. Miss your weekly target and the coach starts roasting, getting harsher every
+day you skip, while the avatar slowly loses its gains.
+
+## Decisions
+
+| Topic | Decision |
+| --- | --- |
+| Name | Iron Coach |
+| Platform | Web app first (works in phone browsers too) |
+| Gym proof | Live selfie from the camera, not an upload |
+| Avatar | 3D, and each user picks a male or female body. A procedural body in v1, a proper model later |
+| Roast language | The user picks English, Banglish or Bangla |
+| Roast strength | Full volume for everyone, with hard limits on topics |
+| Users | Me and my friends; private accounts, no social features yet |
+| Coach | An original character, "Coach Iron", in the old-school hardcore gym style, not any real YouTuber |
+
+## The daily loop
+
+Every day ends one of three ways:
+1. **Checked in:** a selfie plus the muscles trained. Those muscles grow and the coach hypes you.
+2. **Allowed rest day:** a calm warning, and no decay.
+3. **Skipped:** skip days +1, every muscle −2 (never below 10), and the coach roasts harder.
+
+## Rules
+
+The avatar grows faster than it shrinks: one workout is worth about three skipped days for the
+muscles you trained.
+
+| Weekly goal | Rest days allowed between sessions |
+| --- | --- |
+| 2 days | 3 |
+| 3 days | 2 |
+| 4, 5 or 6 days | 1 |
+| 7 days | 0 |
+
+- **Skip days** = days since the last check-in − 1 − allowed rest days. 0 means you're on track.
+- **Streak** = check-ins in a row that stayed within the allowed rest.
+- **Muscles:** chest, back, shoulders, arms, core, legs. Scores run 0–100 and start at 20.
+
+| Event | Effect |
+| --- | --- |
+| Check-in (max one per day) | +6 to each trained group, +1 to all others, capped at 100 |
+| Each skip day | −2 to every group, never below 10 |
+| Streak of 7 check-ins | +3 bonus to every group, plus a coach celebration |
+
+**Titles by average score:** Noodle (under 25), Gym Rookie (25–44), Lifter (45–64), Beast (65–84), Iron Legend (85+).
+
+In v1 the whole state is recalculated from the check-in history when the app loads, using one
+pure function. That makes it easy to test, and no scheduled job is needed.
+
+## The coach
+
+| Skip days | Mood | Example (English) |
+| --- | --- | --- |
+| 0, checked in today | Hype | "THAT'S what I'm talking about, {name}! {muscle} day DONE. Again tomorrow." |
+| 0, rest day | Calm warning | "Rest day. Enjoy it. Tomorrow your ass is back under that bar." |
+| 1 | Annoyed | "One day off. ONE. Don't you dare make it two." |
+| 2 | Angry | "Two days, {name}? Your dumbbells are collecting dust and your excuses are collecting interest." |
+| 3–4 | Savage | "{days} days. Your biceps filed a missing person report. Get your lazy ass up." |
+| 5+ | Nuclear | "I'm not even mad anymore. I'm DISAPPOINTED. Your muscles packed their bags. Go win them back." |
+| First check-in after skipping | Comeback | "Look who crawled back. Good. Now earn it." |
+
+The same energy in the other languages:
+- Banglish: "Bhai, gym er membership ki shudhu wallet e rakhar jonno kinchili? {days} din hoye gelo!"
+- Bangla: "আজও জিম মিস? তোর মাসলগুলো রাগ করে বাড়ি চলে গেছে।"
+
+**Hard limits, at every level and in every language:** no comments on weight, body shape or
+looks; no family insults; no slurs, and nothing about religion, gender, caste or appearance;
+nothing sexual, no threats, and no jokes about death or self-harm. Swearing is allowed.
+
+**v1:** a roast bank in `roasts.ts`, about 6 lines per level per language, picked at random.
+**Later:** Gemini writes roasts from real data, under the same rules, with a filter and a fallback to the bank.
+
+## Screens
+
+| Screen | What's on it |
+| --- | --- |
+| Sign up / log in | Name, email, password. A dark gym look with one loud accent colour |
+| Onboarding (4 steps) | 1. Pick a male or female body (two rotating 3D previews). 2. Weekly goal chips (2–7). 3. Roast language. 4. Meet Coach Iron |
+| Home | The 3D avatar in the centre (drag to rotate, idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, and a huge CHECK IN button |
+| Check-in | A full-screen live camera, then snap (with retake), pick muscles and submit. Then the avatar flexes, the trained muscles grow, "+6 CHEST" numbers fly up, and the coach hypes you |
+| History | A month calendar with a dot per gym day; tap a day to see that selfie and what was trained |
+| Settings | Change body type, goal or roast language; log out |
+
+**Look and feel:** dark, loud and over the top, like a hardcore gym poster. When you're behind, the
+home screen gets visibly worse: it turns redder, the avatar slumps and the coach bubble shakes.
+
+## 3D avatar
+
+v1 builds the body in code from capsules and spheres, with a stylised clay-toy look, using
+React Three Fiber.
+
+| Muscle score | Body parts it scales |
+| --- | --- |
+| Chest | Two pec shapes (width and depth) |
+| Shoulders | Deltoid spheres on top of each arm |
+| Arms | Upper-arm (bicep) and forearm thickness |
+| Back | Torso width (the V-taper) |
+| Core | Six small ab blocks, visible above 50 |
+| Legs | Thigh and calf thickness |
+
+- **Scale formula:** `scale = 0.75 + (score / 100) × 0.6`.
+- **Smooth changes:** sizes ease toward their targets every frame instead of jumping.
+- **Animations:** idle breathing, a flex pose after a check-in, a slumped head-down pose at 3+ skip days, and a shiver at nuclear.
+- **Look:** a toon material, soft lights, a slowly rotating platform, and drag to rotate.
+
+**Male and female bodies** share the same six scores and formula; only the base proportions differ:
+
+| Proportion | Male base | Female base |
+| --- | --- | --- |
+| Shoulders | Wider | Narrower |
+| Waist and hips | Straight, narrow hips | Defined waist, wider hips |
+| Chest | Flat pec shapes that grow with the chest score | Softer rounded shape (kept tasteful); the score grows the muscle underneath |
+| Height | Slightly taller | Slightly shorter |
+
+**Later:** a real GLB body from Blender with one shape key per muscle group, driven by `morphTargetInfluences`, plus ready-made idle, flex and sad animations. Check licences first.
+
+## API
+
+| Method | Path | Does |
+| --- | --- | --- |
+| POST | /api/auth/register, /api/auth/login, /api/auth/logout | Account and session |
+| GET / PATCH | /api/me | Read or change name, body type, goal, language |
+| POST | /api/checkins | Upload selfie + muscles. A second check-in on the same day gets a 409 |
+| GET | /api/checkins?month=YYYY-MM | Check-ins for the calendar |
+| GET | /api/state | Muscles, streak, skip days, title, roast level and today's roast |
+| GET | /api/selfies/:id | Returns the selfie to its owner only |
+
+## Roadmap
+
+- **v1 (a few hours):** rules + roasts, API, 3D avatar, screens, selfie check-in, history.
+- **v2:** AI roasts (Gemini), coach voice (text-to-speech), browser push notifications, an AI check that the selfie looks like a gym.
+- **v3, DevOps:** Docker Compose (web, api, mongo, redis), a nightly BullMQ worker, GitHub Actions CI/CD, HTTPS deployment, object storage for selfies.
+- **v4:** a real GLB body with shape keys, friends and a leaderboard, step counting in a mobile version.
