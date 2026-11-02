@@ -19,6 +19,7 @@ interface ComingSoonPageProps {
 export function ComingSoonPage({ title, step }: ComingSoonPageProps): ReactElement {
   const { data: user } = useMe();
   const logout = useLogout();
+  const logoutLabel = user?.isDemo ? "Leave demo" : "Log out";
 
   return (
     <main className="@container flex min-h-dvh flex-col justify-between gap-10 p-6 sm:p-10">
@@ -56,7 +57,7 @@ export function ComingSoonPage({ title, step }: ComingSoonPageProps): ReactEleme
           onClick={() => logout.mutate()}
           className="cursor-pointer bg-plate px-5 py-3 font-display text-2xl font-black uppercase transition-colors hover:bg-iron-red hover:text-mat disabled:cursor-wait"
         >
-          {logout.isPending ? "Logging out…" : "Log out"}
+          {logout.isPending ? "Leaving…" : logoutLabel}
         </button>
       </div>
     </main>

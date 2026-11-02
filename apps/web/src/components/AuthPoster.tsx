@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { useId, useState, type FormEvent, type ReactElement } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api";
-import type { AuthValues } from "../auth";
+import { useMe, useStartDemo, type AuthValues } from "../auth";
 import { Barbell } from "./Barbell";
 
 const SLAM_DELAY_PER_LINE = 0.07;
@@ -48,6 +48,9 @@ export function AuthPoster({
   onSubmit,
 }: AuthPosterProps): ReactElement {
   const formId = useId();
+  const navigate = useNavigate();
+  const { data: me } = useMe();
+  const startDemo = useStartDemo();
   const [values, setValues] = useState<AuthValues>({});
   const [fieldErrors, setFieldErrors] = useState<Readonly<Record<string, string | undefined>>>({});
   const [formError, setFormError] = useState<string>();
@@ -87,6 +90,16 @@ export function AuthPoster({
       } else {
         fail({}, OFFLINE_MESSAGE);
       }
+    }
+  }
+
+  async function handleStartDemo(): Promise<void> {
+    setFormError(undefined);
+    try {
+      await startDemo.mutateAsync({});
+      await navigate("/");
+    } catch {
+      fail({}, OFFLINE_MESSAGE);
     }
   }
 
@@ -180,6 +193,20 @@ export function AuthPoster({
             {altLabel}
           </Link>
         </p>
+
+        {!me?.isDemo && (
+          <div className="flex flex-col gap-2 border-t-2 border-plate pt-5">
+            <button
+              type="button"
+              disabled={startDemo.isPending}
+              onClick={() => void handleStartDemo()}
+              className="cursor-pointer border-2 border-chalk px-5 py-2.5 font-display text-2xl font-black uppercase transition-colors hover:border-hazard hover:text-hazard disabled:cursor-wait"
+            >
+              {startDemo.isPending ? "Starting demo…" : "Try the demo"}
+            </button>
+            <p className="text-center text-steel">No account needed. Sign up later to keep your data.</p>
+          </div>
+        )}
       </section>
     </main>
   );

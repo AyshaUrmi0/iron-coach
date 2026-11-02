@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { useLogin } from "../auth";
+import { useLogin, useMe } from "../auth";
 import { AuthPoster, type AuthField } from "../components/AuthPoster";
 
 const FIELDS: readonly AuthField[] = [
@@ -21,10 +21,15 @@ const FIELDS: readonly AuthField[] = [
 
 export function LoginPage(): ReactElement {
   const login = useLogin();
+  const { data: me } = useMe();
   return (
     <AuthPoster
       headline={["Back", "under", "the bar."]}
-      coachLine="Coach Iron noticed you were gone. Get your lazy ass in here."
+      coachLine={
+        me?.isDemo
+          ? "Logging in leaves this demo behind. To keep it, sign up instead."
+          : "Coach Iron noticed you were gone. Get your lazy ass in here."
+      }
       fields={FIELDS}
       submitLabel="Log in"
       pendingLabel="Logging in…"

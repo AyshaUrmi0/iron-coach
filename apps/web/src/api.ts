@@ -6,6 +6,7 @@ export interface User {
   readonly weeklyGoal: number;
   readonly language: "en";
   readonly timezone: string;
+  readonly isDemo: boolean;
 }
 
 export type FieldErrors = Readonly<Record<string, readonly string[] | undefined>>;

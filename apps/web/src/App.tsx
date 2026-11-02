@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { useMe } from "./auth";
+import { DemoBanner } from "./components/DemoBanner";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -45,10 +46,18 @@ function ProtectedRoute(): ReactElement | null {
   if (isPending) return null;
   if (isError) return <ConnectionError onRetry={() => void refetch()} />;
   if (!user) return <Navigate to="/login" replace state={{ from: pathname }} />;
-  return <Outlet />;
+  return (
+    <>
+      {user.isDemo && <DemoBanner />}
+      <Outlet />
+    </>
+  );
 }
 
-/** Login and register. Keeps the page on screen while a logged-in user is sent onward. */
+/**
+ * Login and register. Keeps the page on screen while a logged-in user is sent onward.
+ * Demo users may stay, because signing up or logging in is how they keep their data.
+ */
 function GuestRoute(): ReactElement | null {
   const { state } = useLocation();
   const { data: user, isPending, isError, refetch } = useMe();
@@ -58,7 +67,7 @@ function GuestRoute(): ReactElement | null {
   if (isError) return <ConnectionError onRetry={() => void refetch()} />;
   return (
     <>
-      {user && <Navigate to={from} replace />}
+      {user && !user.isDemo && <Navigate to={from} replace />}
       <Outlet />
     </>
   );

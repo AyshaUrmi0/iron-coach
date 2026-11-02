@@ -46,12 +46,16 @@ function userIdFromToken(token: string): string | undefined {
   }
 }
 
-export const requireAuth: RequestHandler = (req, _res, next) => {
+function userIdFromCookie(req: Request): string | undefined {
   const token = req.headers.cookie
     ?.split("; ")
     .find((cookie) => cookie.startsWith(COOKIE_PREFIX))
     ?.slice(COOKIE_PREFIX.length);
-  const userId = token && userIdFromToken(token);
+  return token ? userIdFromToken(token) : undefined;
+}
+
+export const requireAuth: RequestHandler = (req, _res, next) => {
+  const userId = userIdFromCookie(req);
   if (!userId) throw new HttpError(HTTP_UNAUTHORIZED, "Log in first.");
 
   // eslint-disable-next-line ts-patterns/no-param-reassign -- Express middleware passes data on the request
@@ -64,4 +68,11 @@ export async function currentUser(req: Request): Promise<UserDoc> {
   const user = await User.findById(req.userId);
   if (!user) throw new HttpError(HTTP_UNAUTHORIZED, "Log in first.");
   return user;
+}
+
+/** The demo account this request belongs to, if any. Routes open to everyone can call it. */
+export async function currentDemoUser(req: Request): Promise<UserDoc | undefined> {
+  const userId = userIdFromCookie(req);
+  const user = userId ? await User.findById(userId) : null;
+  return user?.isDemo ? user : undefined;
 }

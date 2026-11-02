@@ -48,6 +48,10 @@ export function useRegister(): UseMutationResult<UserResponse, Error, AuthValues
   return useAuthMutation("/auth/register");
 }
 
+export function useStartDemo(): UseMutationResult<UserResponse, Error, AuthValues> {
+  return useAuthMutation("/auth/demo");
+}
+
 export function useLogout(): UseMutationResult<void, Error, void> {
   const queryClient = useQueryClient();
   return useMutation({

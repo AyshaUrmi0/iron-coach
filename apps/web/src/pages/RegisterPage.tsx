@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router";
-import type { AuthValues } from "../auth";
-import { useRegister } from "../auth";
+import { useMe, useRegister, type AuthValues } from "../auth";
 import { AuthPoster, type AuthField } from "../components/AuthPoster";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -34,6 +33,7 @@ const FIELDS: readonly AuthField[] = [
 export function RegisterPage(): ReactElement {
   const register = useRegister();
   const navigate = useNavigate();
+  const { data: me } = useMe();
 
   async function handleSubmit(values: AuthValues): Promise<void> {
     // GuestRoute sends a just-registered user here, not to home.
@@ -44,7 +44,11 @@ export function RegisterPage(): ReactElement {
   return (
     <AuthPoster
       headline={["Sign up.", "Show up."]}
-      coachLine="Coach Iron takes everyone. He just won't be nice about it."
+      coachLine={
+        me?.isDemo
+          ? "Your demo check-ins and settings come with you. The sample check-ins don't."
+          : "Coach Iron takes everyone. He just won't be nice about it."
+      }
       fields={FIELDS}
       submitLabel="Create account"
       pendingLabel="Creating account…"

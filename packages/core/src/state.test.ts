@@ -1,6 +1,6 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
-import { dateInTimezone, daysBetween } from "./dates.js";
+import { addDays, dateInTimezone, daysBetween } from "./dates.js";
 import { computeState, titleFor, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
@@ -31,6 +31,18 @@ describe("daysBetween", () => {
     ["2026-03-05", "2026-03-01", -4],
   ])("%s to %s is %i days", (from, to, days) => {
     expect(daysBetween(from, to)).toBe(days);
+  });
+});
+
+describe("addDays", () => {
+  it.each([
+    ["2026-03-10", 0, "2026-03-10"],
+    ["2026-03-10", -5, "2026-03-05"],
+    ["2026-03-01", -1, "2026-02-28"],
+    ["2028-03-01", -1, "2028-02-29"], // leap year
+    ["2026-12-31", 1, "2027-01-01"],
+  ])("%s plus %i is %s", (date, days, expected) => {
+    expect(addDays(date, days)).toBe(expected);
   });
 });
 
