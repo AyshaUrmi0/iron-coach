@@ -1,7 +1,8 @@
-import type { RequestHandler, Response } from "express";
+import type { Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
-import { env } from "./env.js";
+import { env, isProduction } from "./env.js";
 import { HTTP_UNAUTHORIZED, HttpError } from "./http.js";
+import { User, type UserDoc } from "./models/user.js";
 
 declare global {
   namespace Express {
@@ -20,7 +21,7 @@ const SESSION_MS = 604_800_000; // 7 days
 const COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: "lax",
-  secure: env.NODE_ENV === "production",
+  secure: isProduction,
   path: "/",
 } as const;
 
@@ -57,3 +58,10 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
   req.userId = userId;
   next();
 };
+
+/** The logged-in user. A valid token can outlive its account, so a missing user is logged out. */
+export async function currentUser(req: Request): Promise<UserDoc> {
+  const user = await User.findById(req.userId);
+  if (!user) throw new HttpError(HTTP_UNAUTHORIZED, "Log in first.");
+  return user;
+}

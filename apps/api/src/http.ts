@@ -1,4 +1,6 @@
 import type { ErrorRequestHandler } from "express";
+import { mongo } from "mongoose";
+import multer from "multer";
 import { z } from "zod";
 
 export const HTTP_CREATED = 201;
@@ -8,6 +10,11 @@ export const HTTP_UNAUTHORIZED = 401;
 export const HTTP_NOT_FOUND = 404;
 export const HTTP_CONFLICT = 409;
 const HTTP_SERVER_ERROR = 500;
+const MONGO_DUPLICATE_KEY = 11_000;
+
+export function isDuplicateKeyError(err: unknown): boolean {
+  return err instanceof mongo.MongoServerError && err.code === MONGO_DUPLICATE_KEY;
+}
 
 /** An error whose message is safe to show the client. */
 export class HttpError extends Error {
@@ -38,6 +45,10 @@ export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, _next
     res
       .status(HTTP_BAD_REQUEST)
       .json({ error: formErrors[0] ?? "Invalid input.", fields: fieldErrors });
+    return;
+  }
+  if (err instanceof multer.MulterError) {
+    res.status(HTTP_BAD_REQUEST).json({ error: err.message });
     return;
   }
   if (isClientError(err)) {

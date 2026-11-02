@@ -1,6 +1,6 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
-import { daysBetween } from "./dates.js";
+import { dateInTimezone, daysBetween } from "./dates.js";
 import { computeState, titleFor, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
@@ -31,6 +31,17 @@ describe("daysBetween", () => {
     ["2026-03-05", "2026-03-01", -4],
   ])("%s to %s is %i days", (from, to, days) => {
     expect(daysBetween(from, to)).toBe(days);
+  });
+});
+
+describe("dateInTimezone", () => {
+  it.each([
+    ["2026-01-01T17:59:00Z", "Asia/Dhaka", "2026-01-01"],
+    ["2026-01-01T18:00:00Z", "Asia/Dhaka", "2026-01-02"], // midnight in Dhaka, still Jan 1 in UTC
+    ["2026-01-01T18:00:00Z", "UTC", "2026-01-01"],
+    ["2026-12-31T18:30:00Z", "Asia/Dhaka", "2027-01-01"],
+  ])("%s in %s is %s", (moment, timezone, date) => {
+    expect(dateInTimezone(new Date(moment), timezone)).toBe(date);
   });
 });
 
