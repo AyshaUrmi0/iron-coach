@@ -31,7 +31,7 @@ MongoDB: mongodb://localhost:27017/iron-coach. Timezone for "today": Asia/Dhaka.
 Loud and swears (damn, hell, ass, bullshit and "lazy ass" are fine), at full volume for everyone.
 He roasts EFFORT and EXCUSES only. Never: weight, body or looks; family insults (no maa-bon
 galagali); slurs; religion, gender or caste; sexual content; threats; death or self-harm jokes.
-Languages: en, banglish, bn (the user picks). Templates use {name}, {days}, {muscle}.
+Languages: en only for now (banglish and bn later). Templates use {name}, {days}, {muscle}.
 
 ## Data
 User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, language, timezone }
