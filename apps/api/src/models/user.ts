@@ -1,3 +1,4 @@
+import { LANGUAGES } from "@iron-coach/core";
 import { model, Schema, type HydratedDocument, type InferSchemaType } from "mongoose";
 import { z } from "zod";
 
@@ -5,8 +6,6 @@ const MAX_NAME_LENGTH = 50;
 
 export const nameSchema = z.string().trim().min(1).max(MAX_NAME_LENGTH);
 export const BODY_TYPES = ["male", "female"] as const;
-// shortcut: copy of LANGUAGES in @iron-coach/core, import it once the API depends on core in Step 5.
-export const LANGUAGES = ["en"] as const;
 export const MIN_WEEKLY_GOAL = 2;
 export const MAX_WEEKLY_GOAL = 7;
 

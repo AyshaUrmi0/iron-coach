@@ -10,3 +10,9 @@ function toDayNumber(date: string): number {
 export function daysBetween(from: string, to: string): number {
   return toDayNumber(to) - toDayNumber(from);
 }
+
+/** The "YYYY-MM-DD" date at a given moment in an IANA timezone. */
+export function dateInTimezone(moment: Date, timezone: string): string {
+  // en-CA is the locale whose dates are written YYYY-MM-DD.
+  return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(moment);
+}
