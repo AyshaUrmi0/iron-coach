@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Typecheck, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  api:
+    name: API curl checks
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URL: mongodb://localhost:27017/iron-coach
+      PORT: 4000
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The curl scripts clean up through this container, so it needs this exact name.
+      - run: docker run -d --name iron-mongo -p 27017:27017 mongo:7
+      - name: Start the API
+        run: |
+          # Only for this run, so it never needs a stored secret.
+          export JWT_SECRET="$(openssl rand -hex 48)"
+          pnpm --filter @iron-coach/api start > api.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl -sf http://localhost:4000/api/health > /dev/null && exit 0
+            sleep 1
+          done
+          cat api.log
+          exit 1
+      - run: bash apps/api/scripts/smoke-auth.sh
+      - run: bash apps/api/scripts/smoke-checkins.sh
+      - run: bash apps/api/scripts/smoke-demo.sh
+      - name: Show the API log
+        if: failure()
+        run: cat api.log

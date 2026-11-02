@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
 import { Router } from "express";
 import { z } from "zod";
-import { clearAuthCookie, setAuthCookie } from "../auth.js";
+import { clearAuthCookie, currentDemoUser, setAuthCookie } from "../auth.js";
+import { createDemoUser, upgradeDemoUser } from "../demo.js";
 import {
   HTTP_CONFLICT,
   HTTP_CREATED,
@@ -35,10 +36,12 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-async function createUser(name: string, email: string, password: string): Promise<UserDoc> {
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+async function createAccount(
+  demoUser: UserDoc | undefined,
+  account: { readonly name: string; readonly email: string; readonly passwordHash: string },
+): Promise<UserDoc> {
   try {
-    return await User.create({ name, email, passwordHash });
+    return await (demoUser ? upgradeDemoUser(demoUser, account) : User.create(account));
   } catch (err) {
     if (isDuplicateKeyError(err)) {
       throw new HttpError(HTTP_CONFLICT, "That email is already registered.");
@@ -51,7 +54,15 @@ export const authRouter = Router();
 
 authRouter.post("/register", async (req, res) => {
   const { name, email, password } = registerSchema.parse(req.body);
-  const user = await createUser(name, email, password);
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  // Signing up from a demo keeps what the visitor did there.
+  const user = await createAccount(await currentDemoUser(req), { name, email, passwordHash });
+  setAuthCookie(res, user._id.toString());
+  res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
+});
+
+authRouter.post("/demo", async (_req, res) => {
+  const user = await createDemoUser();
   setAuthCookie(res, user._id.toString());
   res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
 });

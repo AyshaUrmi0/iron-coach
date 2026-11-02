@@ -11,7 +11,12 @@ import {
   isDuplicateKeyError,
 } from "../http.js";
 import { Checkin, musclesSchema, toPublicCheckin } from "../models/checkin.js";
-import { newSelfiePath, sniffImageExtension, writeSelfie } from "../selfies.js";
+import {
+  newSelfiePath,
+  sniffImageExtension,
+  writePlaceholderSelfie,
+  writeSelfie,
+} from "../selfies.js";
 
 const MAX_SELFIE_BYTES = 5_242_880; // 5 MB
 
@@ -44,7 +49,11 @@ checkinsRouter.post("/", upload.single("selfie"), async (req, res) => {
 
   const user = await currentUser(req);
   const takenAt = new Date();
-  const selfiePath = newSelfiePath(user._id.toString(), extension);
+  const userId = user._id.toString();
+  // Demo visitors are anonymous, so their photos are never kept.
+  const selfiePath = user.isDemo
+    ? await writePlaceholderSelfie(userId)
+    : newSelfiePath(userId, extension);
 
   // Saved before the file, so a second check-in today is refused without leaving a stray selfie.
   const checkin = await Checkin.create({
@@ -58,11 +67,13 @@ checkinsRouter.post("/", upload.single("selfie"), async (req, res) => {
     throw err;
   });
 
-  try {
-    await writeSelfie(selfiePath, req.file.buffer);
-  } catch (err) {
-    await checkin.deleteOne();
-    throw err;
+  if (!user.isDemo) {
+    try {
+      await writeSelfie(selfiePath, req.file.buffer);
+    } catch (err) {
+      await checkin.deleteOne();
+      throw err;
+    }
   }
   res.status(HTTP_CREATED).json({ checkin: toPublicCheckin(checkin) });
 });

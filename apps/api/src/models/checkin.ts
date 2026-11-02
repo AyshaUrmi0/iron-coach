@@ -13,6 +13,7 @@ interface CheckinFields {
   takenAt: Date;
   muscles: MuscleGroup[];
   selfiePath: string;
+  isSample?: boolean;
 }
 
 const checkinSchema = new Schema<CheckinFields>({
@@ -21,6 +22,8 @@ const checkinSchema = new Schema<CheckinFields>({
   takenAt: { type: Date, required: true },
   muscles: { type: [{ type: String, enum: MUSCLE_GROUPS }], required: true },
   selfiePath: { type: String, required: true },
+  // Made-up history a demo account starts with. Removed if the visitor signs up.
+  isSample: { type: Boolean, default: false },
 });
 
 checkinSchema.index({ userId: 1, date: 1 }, { unique: true });

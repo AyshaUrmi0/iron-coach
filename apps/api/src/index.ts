@@ -1,5 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
+import { startDemoSweep } from "./demo.js";
 import { env, isProduction } from "./env.js";
 import { errorHandler, HTTP_NOT_FOUND, HttpError } from "./http.js";
 import { Checkin } from "./models/checkin.js";
@@ -32,6 +33,7 @@ app.use(errorHandler);
 await mongoose.connect(env.MONGO_URL);
 // Waits for the unique indexes, so two requests can't both claim an email or a day's check-in.
 await Promise.all([User.init(), Checkin.init()]);
+startDemoSweep();
 
 app.listen(env.PORT, (error) => {
   if (error) throw error;

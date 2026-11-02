@@ -27,6 +27,8 @@ const userSchema = new Schema(
     },
     language: { type: String, enum: LANGUAGES, required: true, default: "en" },
     timezone: { type: String, required: true, default: "Asia/Dhaka" },
+    isDemo: { type: Boolean, required: true, default: false },
+    demoExpiresAt: { type: Date },
   },
   { timestamps: true },
 );
@@ -43,6 +45,7 @@ export interface PublicUser {
   readonly weeklyGoal: number;
   readonly language: UserDoc["language"];
   readonly timezone: string;
+  readonly isDemo: boolean;
 }
 
 /** The only user fields that may leave the API. Never includes passwordHash. */
@@ -55,5 +58,6 @@ export function toPublicUser(user: UserDoc): PublicUser {
     weeklyGoal: user.weeklyGoal,
     language: user.language,
     timezone: user.timezone,
+    isDemo: user.isDemo,
   };
 }

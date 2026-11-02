@@ -1,1 +1,34 @@
 @import "tailwindcss";
+@import "@fontsource-variable/big-shoulders-display";
+@import "@fontsource-variable/archivo";
+
+@theme {
+  --color-mat: #100e0d;
+  --color-plate: #26231f;
+  --color-steel: #a8a39b;
+  --color-chalk: #f4f1e8;
+  --color-iron-red: #ff2d2d;
+  --color-hazard: #ffd60a;
+
+  --font-display: "Big Shoulders Display Variable", Impact, "Arial Narrow", sans-serif;
+  --font-body: "Archivo Variable", system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+  background: var(--color-mat);
+  color: var(--color-chalk);
+  font-family: var(--font-body);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-hazard);
+  outline-offset: 3px;
+}
+
+/* Stops browser autofill painting the dark inputs pale. */
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-chalk);
+  box-shadow: inset 0 0 0 100px var(--color-plate);
+  caret-color: var(--color-chalk);
+}
