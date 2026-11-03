@@ -1,10 +1,10 @@
 # Iron Coach: design
 
-Iron Coach is a web app with two characters: a 3D avatar of you that grows muscle when you train,
+Iron Coach is a web app with two characters: an avatar of you that grows muscle when you train,
 and a loud, savage coach, Coach Iron, who roasts you when you skip.
 
-You prove each gym visit with a live selfie and say which muscles you trained, and those muscles
-grow on the avatar. Miss your weekly target and the coach starts roasting, getting harsher every
+You prove each gym visit with a live selfie and say which muscles you trained, and the avatar's
+body grows. Miss your weekly target and the coach starts roasting, getting harsher every
 day you skip, while the avatar slowly loses its gains.
 
 ## Decisions
@@ -14,7 +14,7 @@ day you skip, while the avatar slowly loses its gains.
 | Name | Iron Coach |
 | Platform | Web app first (works in phone browsers too) |
 | Gym proof | Live selfie from the camera, not an upload |
-| Avatar | 3D, and each user picks a male or female body. A procedural body in v1, a proper model later |
+| Avatar | 2D frames cut from our own video, one male body for now. Each user still picks a body type, ready for female art later |
 | Roast language | The user picks English, Banglish or Bangla |
 | Roast strength | Full volume for everyone, aimed at laziness and excuses |
 | Users | Me and my friends; private accounts, no social features yet |
@@ -41,7 +41,7 @@ muscles you trained.
 
 - **Skip days** = days since the last check-in − 1 − allowed rest days. 0 means you're on track.
 - **Streak** = check-ins in a row that stayed within the allowed rest.
-- **Muscles:** chest, back, shoulders, arms, core, legs. Scores run 0–100 and start at 20.
+- **Muscles:** chest, back, shoulders, arms, core, legs. Scores run 0–100. They start from the body the user picks in onboarding: heavy 10, lean 20 (the default) or muscular 60.
 
 | Event | Effect |
 | --- | --- |
@@ -86,43 +86,33 @@ appearance; nothing sexual, no threats, and no jokes about death or self-harm. S
 | --- | --- |
 | Sign up / log in | Name, email, password. A dark gym look with one loud accent colour |
 | Onboarding (4 steps) | 1. Pick a male or female body (two rotating 3D previews). 2. Weekly goal chips (2–7). 3. Roast language. 4. Meet Coach Iron |
-| Home | The 3D avatar in the centre (drag to rotate, idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, and a huge CHECK IN button |
-| Check-in | A full-screen live camera, then snap (with retake), pick muscles and submit. Then the avatar flexes, the trained muscles grow, "+6 CHEST" numbers fly up, and the coach hypes you |
+| Home | The avatar in the centre (idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, and a huge CHECK IN button |
+| Check-in | A full-screen live camera, then snap (with retake), pick muscles and submit. Then the avatar flexes, its body grows, "+6 CHEST" numbers fly up, and the coach hypes you |
 | History | A month calendar with a dot per gym day; tap a day to see that selfie and what was trained |
 | Settings | Change body type, goal or roast language; log out |
 
 **Look and feel:** dark, loud and over the top, like a hardcore gym poster. When you're behind, the
-home screen gets visibly worse: it turns redder, the avatar slumps and the coach bubble shakes.
+home screen gets visibly worse: it turns redder, the avatar darkens and slumps and the coach bubble shakes.
 
-## 3D avatar
+## Avatar
 
-v1 builds the body in code from capsules and spheres, with a stylised clay-toy look, using
-React Three Fiber.
+Built from our own 10-second video, kept in `docs/avatar-reference/`. It runs from muscular (3.8s)
+to lean (5.7s to 7.2s) to heavy (8.6s). 25 frames from it, with the black background removed, are in
+`apps/web/public/avatar/`, numbered from heaviest (0) through lean (10) to most muscular (24).
 
-| Muscle score | Body parts it scales |
+The body follows the average of the six muscle scores (`avatarFrame` in `packages/core`):
+
+| Average score | Body |
 | --- | --- |
-| Chest | Two pec shapes (width and depth) |
-| Shoulders | Deltoid spheres on top of each arm |
-| Arms | Upper-arm (bicep) and forearm thickness |
-| Back | Torso width (the V-taper) |
-| Core | Six small ab blocks, visible above 50 |
-| Legs | Thigh and calf thickness |
+| 100 down to 20 | Muscular down to lean, frames 24 to 10 |
+| 20 down to 15 | Lean, frame 10 |
+| Under 15 | Heavy, frames 3 to 0. Frames 4 to 9 are only passed through, because the trousers are see-through there |
 
-- **Scale formula:** `scale = 0.75 + (score / 100) × 0.6`.
-- **Smooth changes:** sizes ease toward their targets every frame instead of jumping.
-- **Animations:** idle breathing, a flex pose after a check-in, a slumped head-down pose at 3+ skip days, and a shiver at nuclear.
-- **Look:** a toon material, soft lights, a slowly rotating platform, and drag to rotate.
-
-**Male and female bodies** share the same six scores and formula; only the base proportions differ:
-
-| Proportion | Male base | Female base |
-| --- | --- | --- |
-| Shoulders | Wider | Narrower |
-| Waist and hips | Straight, narrow hips | Defined waist, wider hips |
-| Chest | Flat pec shapes that grow with the chest score | Softer rounded shape (kept tasteful); the score grows the muscle underneath |
-| Height | Slightly taller | Slightly shorter |
-
-**Later:** a real GLB body from Blender with one shape key per muscle group, driven by `morphTargetInfluences`, plus ready-made idle, flex and sad animations. Check licences first.
+- **Individual muscles:** only the bars show them. The art is one whole body, so a single muscle can't grow alone.
+- **Smooth changes:** the body steps through the frames toward its score instead of jumping.
+- **Animations:** idle breathing, a flex after a check-in, darker and leaning at 3+ skip days, and a shiver at nuclear.
+- **Limits of 2D:** no drag to rotate and no head-down slump pose.
+- **Dev page:** `/avatar-lab` tries every body size and mood. It doesn't exist in production.
 
 ## API
 
@@ -137,7 +127,7 @@ React Three Fiber.
 
 ## Roadmap
 
-- **v1 (a few hours):** rules + roasts, API, 3D avatar, screens, selfie check-in, history.
+- **v1 (a few hours):** rules + roasts, API, avatar, screens, selfie check-in, history.
 - **v2:** AI roasts (Gemini), coach voice (text-to-speech), browser push notifications, an AI check that the selfie looks like a gym.
 - **v3, DevOps:** Docker Compose (web, api, mongo, redis), a nightly BullMQ worker, GitHub Actions CI/CD, HTTPS deployment, object storage for selfies.
 - **v4:** a real GLB body with shape keys, friends and a leaderboard, step counting in a mobile version.

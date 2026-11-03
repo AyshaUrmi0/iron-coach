@@ -4,6 +4,7 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { useMe } from "./auth";
 import { ConnectionError } from "./components/ConnectionError";
 import { DemoBanner } from "./components/DemoBanner";
+import { AvatarLabPage } from "./pages/AvatarLabPage";
 import { CheckinPage } from "./pages/CheckinPage";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { HomePage } from "./pages/HomePage";
@@ -78,6 +79,7 @@ export default function App(): ReactElement {
             <Route path="/history" element={<ComingSoonPage title="History" step={LATER_STEP} />} />
             <Route path="/settings" element={<ComingSoonPage title="Settings" step={LATER_STEP} />} />
           </Route>
+          {import.meta.env.DEV && <Route path="/avatar-lab" element={<AvatarLabPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         {!reduceMotion && (

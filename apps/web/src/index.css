@@ -12,6 +12,37 @@
 
   --font-display: "Big Shoulders Display Variable", Impact, "Arial Narrow", sans-serif;
   --font-body: "Archivo Variable", system-ui, sans-serif;
+
+  --animate-breathe: breathe 3.5s ease-in-out infinite;
+  --animate-flex: flex 0.8s ease-out;
+  --animate-shiver: shiver 0.25s linear infinite;
+
+  @keyframes breathe {
+    50% {
+      transform: scale(1.012, 1.018);
+    }
+  }
+
+  @keyframes flex {
+    30% {
+      transform: scale(1.12);
+    }
+    55% {
+      transform: scale(0.98);
+    }
+    75% {
+      transform: scale(1.06);
+    }
+  }
+
+  @keyframes shiver {
+    25% {
+      transform: translateX(-2px);
+    }
+    75% {
+      transform: translateX(2px);
+    }
+  }
 }
 
 html {

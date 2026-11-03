@@ -1,4 +1,4 @@
-import { LANGUAGES } from "@iron-coach/core";
+import { LANGUAGES, START_BODIES } from "@iron-coach/core";
 import { Router } from "express";
 import { z } from "zod";
 import { currentUser, requireAuth } from "../auth.js";
@@ -15,6 +15,7 @@ import {
 const updateSchema = z.strictObject({
   name: nameSchema.optional(),
   bodyType: z.enum(BODY_TYPES).optional(),
+  startBody: z.enum(START_BODIES).optional(),
   weeklyGoal: z.number().int().min(MIN_WEEKLY_GOAL).max(MAX_WEEKLY_GOAL).optional(),
   language: z.enum(LANGUAGES).optional(),
 });

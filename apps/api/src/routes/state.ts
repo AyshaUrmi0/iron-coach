@@ -38,7 +38,7 @@ stateRouter.get("/", requireAuth, async (req, res) => {
   const today = fakeToday(req) ?? dateInTimezone(new Date(), user.timezone);
   const checkins = await Checkin.find({ userId: user._id }).select("date muscles").lean();
 
-  const state = computeState(checkins, user.weeklyGoal, today);
+  const state = computeState(checkins, user.weeklyGoal, today, user.startBody);
   const trainedToday = checkins.find((checkin) => checkin.date === today)?.muscles ?? [];
   const muscle = trainedToday.length ? trainedToday.join(" & ") : weakestMuscle(state.muscles);
   const roast = await todaysRoast(user, today, {

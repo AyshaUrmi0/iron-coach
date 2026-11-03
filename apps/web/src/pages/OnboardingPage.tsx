@@ -1,22 +1,24 @@
-import { LANGUAGES, type Language } from "@iron-coach/core";
+// Language step: English only for now. Bring back the commented-out parts below when others are added.
+// import { LANGUAGES, type Language } from "@iron-coach/core";
+import { START_BODIES, startBodyFrame } from "@iron-coach/core";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 import { ApiError, OFFLINE_MESSAGE, type User } from "../api";
 import { useMe, useUpdateMe } from "../auth";
+import { frameUrl } from "../components/Avatar";
 import { ChoiceChips } from "../components/ChoiceChips";
 
 const BODY_TYPES: readonly User["bodyType"][] = ["male", "female"];
 // eslint-disable-next-line ts-patterns/no-magic-numbers -- the allowed weekly goals, from the rules in CLAUDE.md
 const WEEKLY_GOALS: readonly number[] = [2, 3, 4, 5, 6, 7];
-const LANGUAGE_LABELS: Readonly<Record<Language, string>> = { en: "English" };
+// const LANGUAGE_LABELS: Readonly<Record<Language, string>> = { en: "English" };
 
 const SLIDE_DISTANCE = 60;
 const SLIDE_SECONDS = 0.2;
 
 const STEP_BODY = 0;
-const STEP_GOAL = 1;
-const STEP_LANGUAGE = 2;
+const STEP_GOAL = 2;
 const STEP_COACH = 3;
 const STEP_COUNT = 4;
 
@@ -25,8 +27,9 @@ function Onboarding({ user }: { readonly user: User }): ReactElement {
   const update = useUpdateMe();
   const [step, setStep] = useState(STEP_BODY);
   const [bodyType, setBodyType] = useState(user.bodyType);
+  const [startBody, setStartBody] = useState(user.startBody);
   const [weeklyGoal, setWeeklyGoal] = useState(user.weeklyGoal);
-  const [language, setLanguage] = useState(user.language);
+  // const [language, setLanguage] = useState(user.language);
   const heading = useRef<HTMLHeadingElement>(null);
 
   // Tells keyboard and screen reader users that the page moved on to a new question.
@@ -37,9 +40,9 @@ function Onboarding({ user }: { readonly user: User }): ReactElement {
       await navigate("/");
       return;
     }
-    if (step === STEP_LANGUAGE) {
+    if (step === STEP_GOAL) {
       try {
-        await update.mutateAsync({ bodyType, weeklyGoal, language });
+        await update.mutateAsync({ bodyType, startBody, weeklyGoal });
       } catch {
         return;
       }
@@ -50,8 +53,22 @@ function Onboarding({ user }: { readonly user: User }): ReactElement {
   const steps: readonly { title: string; intro: string; content?: ReactNode; next: string }[] = [
     {
       title: "Pick your body",
-      intro: "Your avatar will use this body type. You can change it later.",
+      intro: "Everyone gets the same avatar for now. Female art is coming later, and it'll use this choice.",
       content: <ChoiceChips legend="Body type" options={BODY_TYPES} value={bodyType} onChange={setBodyType} />,
+      next: "Next",
+    },
+    {
+      title: "Starting shape",
+      intro: "Be honest. Train and your avatar grows. Skip and it shrinks.",
+      content: (
+        <ChoiceChips
+          legend="Starting shape"
+          options={START_BODIES}
+          value={startBody}
+          onChange={setStartBody}
+          pictureFor={(option) => frameUrl(startBodyFrame(option))}
+        />
+      ),
       next: "Next",
     },
     {
@@ -60,22 +77,22 @@ function Onboarding({ user }: { readonly user: User }): ReactElement {
       content: (
         <ChoiceChips legend="Days per week" options={WEEKLY_GOALS} value={weeklyGoal} onChange={setWeeklyGoal} />
       ),
-      next: "Next",
-    },
-    {
-      title: "Roast language",
-      intro: "Which language should he yell in? Banglish and Bangla are coming later.",
-      content: (
-        <ChoiceChips
-          legend="Roast language"
-          options={LANGUAGES}
-          value={language}
-          onChange={setLanguage}
-          labelFor={(option) => LANGUAGE_LABELS[option]}
-        />
-      ),
       next: update.isPending ? "Saving…" : "Next",
     },
+    // {
+    //   title: "Roast language",
+    //   intro: "Which language should he yell in? Banglish and Bangla are coming later.",
+    //   content: (
+    //     <ChoiceChips
+    //       legend="Roast language"
+    //       options={LANGUAGES}
+    //       value={language}
+    //       onChange={setLanguage}
+    //       labelFor={(option) => LANGUAGE_LABELS[option]}
+    //     />
+    //   ),
+    //   next: update.isPending ? "Saving…" : "Next",
+    // },
     {
       title: "Meet Coach Iron",
       intro: `${user.name}. I've heard every excuse there is, and I don't buy a damn one of them. Skip the gym and I WILL know. Now get your lazy ass moving.`,

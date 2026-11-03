@@ -1,4 +1,4 @@
-import { LANGUAGES } from "@iron-coach/core";
+import { LANGUAGES, START_BODIES } from "@iron-coach/core";
 import { model, Schema, type HydratedDocument, type InferSchemaType } from "mongoose";
 import { z } from "zod";
 
@@ -18,6 +18,7 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     bodyType: { type: String, enum: BODY_TYPES, required: true, default: "male" },
+    startBody: { type: String, enum: START_BODIES, required: true, default: "lean" },
     weeklyGoal: {
       type: Number,
       required: true,
@@ -42,6 +43,7 @@ export interface PublicUser {
   readonly name: string;
   readonly email: string;
   readonly bodyType: UserDoc["bodyType"];
+  readonly startBody: UserDoc["startBody"];
   readonly weeklyGoal: number;
   readonly language: UserDoc["language"];
   readonly timezone: string;
@@ -55,6 +57,7 @@ export function toPublicUser(user: UserDoc): PublicUser {
     name: user.name,
     email: user.email,
     bodyType: user.bodyType,
+    startBody: user.startBody,
     weeklyGoal: user.weeklyGoal,
     language: user.language,
     timezone: user.timezone,

@@ -19,6 +19,10 @@ export type RoastLevel = (typeof ROAST_LEVELS)[number];
 
 export type AvatarMood = "hype" | "normal" | "slump" | "nuclear";
 
+export const START_BODIES = ["heavy", "lean", "muscular"] as const;
+
+export type StartBody = (typeof START_BODIES)[number];
+
 export interface Checkin {
   readonly date: string;
   readonly muscles: readonly MuscleGroup[];
@@ -52,9 +56,21 @@ const ALLOWED_REST: Readonly<Record<number, number | undefined>> = {
 };
 /* eslint-enable ts-patterns/no-magic-numbers */
 
+export const AVATAR_FRAMES = 25;
+const LEAN_FRAME = 10;
+// Frames 4 to 9 are the video's morph, with see-through trousers, so the body only passes through them.
+const LAST_HEAVY_FRAME = 3;
+const HEAVY_BELOW = 15;
+
 const START_SCORE = 20;
 const MIN_SCORE = 10;
 const MAX_SCORE = 100;
+const MUSCULAR_START_SCORE = 60;
+const START_SCORES: Readonly<Record<StartBody, number>> = {
+  heavy: MIN_SCORE,
+  lean: START_SCORE,
+  muscular: MUSCULAR_START_SCORE,
+};
 const TRAINED_GAIN = 6;
 const UNTRAINED_GAIN = 1;
 const SKIP_LOSS = 2;
@@ -131,6 +147,28 @@ export function weakestMuscle(muscles: Muscles): MuscleGroup {
   return MUSCLE_GROUPS.reduce((weakest, group) => (muscles[group] < muscles[weakest] ? group : weakest));
 }
 
+export function averageScore(muscles: Muscles): number {
+  return MUSCLE_GROUPS.reduce((sum, group) => sum + muscles[group], 0) / MUSCLE_GROUPS.length;
+}
+
+/**
+ * Which picture in apps/web/public/avatar the body rests on: 0 is the heaviest, the last is the most muscular.
+ * Lean from a new user's score down to HEAVY_BELOW, so a skip or two doesn't change the whole body.
+ */
+export function avatarFrame(average: number): number {
+  if (average < HEAVY_BELOW) {
+    return Math.round(((average - MIN_SCORE) / (HEAVY_BELOW - MIN_SCORE)) * LAST_HEAVY_FRAME);
+  }
+  if (average <= START_SCORE) return LEAN_FRAME;
+  const growth = (average - START_SCORE) / (MAX_SCORE - START_SCORE);
+  return LEAN_FRAME + Math.round(growth * (AVATAR_FRAMES - 1 - LEAN_FRAME));
+}
+
+/** The picture a starting body begins on. */
+export function startBodyFrame(startBody: StartBody): number {
+  return avatarFrame(START_SCORES[startBody]);
+}
+
 export function moodFor({ checkedInToday, skipDays }: State): AvatarMood {
   if (checkedInToday) return "hype";
   if (skipDays >= NUCLEAR_MIN_SKIPS) return "nuclear";
@@ -176,10 +214,11 @@ export function computeState(
   checkins: readonly Checkin[],
   weeklyGoal: number,
   today: string,
+  startBody: StartBody = "lean",
 ): State {
   const rest = allowedRest(weeklyGoal);
   const start: Progress = {
-    muscles: START_MUSCLES,
+    muscles: mapMuscles(START_MUSCLES, () => START_SCORES[startBody]),
     streak: 0,
     lastDate: undefined,
     skipsBeforeLastCheckin: 0,
@@ -195,8 +234,7 @@ export function computeState(
   const skipDays = lastDate ? skipsBetween(lastDate, today, rest) : 0;
   const muscles = decay(replayed, skipDays);
   const checkedInToday = lastDate === today;
-  const average =
-    MUSCLE_GROUPS.reduce((sum, group) => sum + muscles[group], 0) / MUSCLE_GROUPS.length;
+  const average = averageScore(muscles);
 
   return {
     muscles,
