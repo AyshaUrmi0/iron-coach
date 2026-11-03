@@ -14,6 +14,8 @@ export type RoastLevel =
   | "nuclear"
   | "comeback";
 
+export type AvatarMood = "hype" | "normal" | "slump" | "nuclear";
+
 export interface Checkin {
   readonly date: string;
   readonly muscles: readonly MuscleGroup[];
@@ -64,6 +66,8 @@ const IRON_LEGEND_MIN = 85;
 const ANNOYED_SKIPS = 1;
 const ANGRY_SKIPS = 2;
 const SAVAGE_MAX_SKIPS = 4;
+const SLUMP_MIN_SKIPS = 3;
+const NUCLEAR_MIN_SKIPS = 5;
 
 const START_MUSCLES: Muscles = {
   chest: START_SCORE,
@@ -101,6 +105,12 @@ function decay(muscles: Muscles, skips: number): Muscles {
 
 function gain(score: number, amount: number): number {
   return Math.min(MAX_SCORE, score + amount);
+}
+
+export function moodFor({ checkedInToday, skipDays }: State): AvatarMood {
+  if (checkedInToday) return "hype";
+  if (skipDays >= NUCLEAR_MIN_SKIPS) return "nuclear";
+  return skipDays >= SLUMP_MIN_SKIPS ? "slump" : "normal";
 }
 
 export function titleFor(average: number): Title {
