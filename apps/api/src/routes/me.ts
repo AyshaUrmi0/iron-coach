@@ -2,6 +2,7 @@ import { LANGUAGES } from "@iron-coach/core";
 import { Router } from "express";
 import { z } from "zod";
 import { currentUser, requireAuth } from "../auth.js";
+import { Roast } from "../models/roast.js";
 import {
   BODY_TYPES,
   MAX_WEEKLY_GOAL,
@@ -31,5 +32,7 @@ meRouter.patch("/", async (req, res) => {
   const user = await currentUser(req);
   user.set(updates);
   await user.save();
+  // A saved roast could use the old name or language.
+  await Roast.deleteOne({ userId: user._id });
   res.json({ user: toPublicUser(user) });
 });

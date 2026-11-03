@@ -6,7 +6,8 @@
     "dev": "tsx watch --env-file-if-exists=.env src/local.ts",
     "start": "tsx --env-file-if-exists=.env src/local.ts",
     "build": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@iron-coach/core": "workspace:*",
@@ -16,6 +17,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.11.4",
     "multer": "^2.5.0",
+    "openai": "^7.47.0",
     "tsx": "^4.23.15",
     "zod": "^4.6.7"
   },
@@ -25,6 +27,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.3.0",
     "@types/node": "^24.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
   }
 }

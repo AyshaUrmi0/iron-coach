@@ -9,8 +9,6 @@ import {
 import { get, isConflictError, isLoggedOutError, postForm } from "./api";
 import { ME_KEY } from "./auth";
 
-const FRESH_MS = 300_000;
-
 export const STATE_KEY = ["state"];
 
 export interface GameState {
@@ -29,15 +27,10 @@ interface NewCheckin {
   readonly muscles: readonly MuscleGroup[];
 }
 
-/**
- * Each fetch picks a new roast, so refetching on every tab switch would retype it and shake the
- * screen again. Staying fresh for a while avoids that, and a tab left open still catches a new day.
- */
 export function useGameState(): UseQueryResult<GameState> {
   return useQuery({
     queryKey: STATE_KEY,
     queryFn: () => get<GameState>("/state"),
-    staleTime: FRESH_MS,
   });
 }
 

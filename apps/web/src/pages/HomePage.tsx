@@ -1,7 +1,8 @@
-import { moodFor, trainedGains, type RoastLevel, type State } from "@iron-coach/core";
+import { moodFor, pickProcrastinationRoast, trainedGains, type RoastLevel, type State } from "@iron-coach/core";
 import { useAnimate, useReducedMotion } from "motion/react";
 import { useEffect, useState, type ReactElement } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
+import { useMe } from "../auth";
 import { AvatarSlot } from "../components/AvatarSlot";
 import { CoachBubble } from "../components/CoachBubble";
 import { ConnectionError } from "../components/ConnectionError";
@@ -57,6 +58,8 @@ function CheckInButton({ state }: { readonly state: State }): ReactElement {
 }
 
 function Home({ state, roast }: GameState): ReactElement {
+  const { data: user } = useMe();
+  const [insult, setInsult] = useState<string>();
   const [screen, animate] = useAnimate<HTMLDivElement>();
   const reduceMotion = useReducedMotion();
   const location = useLocation();
@@ -104,7 +107,20 @@ function Home({ state, roast }: GameState): ReactElement {
           </nav>
         </header>
 
-        <CoachBubble key={roast} line={roast} />
+        {/* Stays mounted while the bubble is replaced, so screen readers hear each new insult. */}
+        <div aria-live="polite">
+          <CoachBubble key={insult ?? roast} line={insult ?? roast} />
+        </div>
+
+        {user && !state.checkedInToday && (
+          <button
+            type="button"
+            onClick={() => setInsult(pickProcrastinationRoast(user.language, user.name, insult))}
+            className="bg-hazard p-3 font-display text-2xl font-black text-mat uppercase transition-colors hover:bg-iron-red"
+          >
+            I'm procrastinating. Insult me.
+          </button>
+        )}
 
         <div className="grid flex-1 gap-5 lg:grid-cols-[14rem_1fr_18rem]">
           <section aria-label="Your stats" className="flex flex-col gap-3">

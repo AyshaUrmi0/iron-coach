@@ -5,14 +5,17 @@ export const MUSCLE_GROUPS = ["chest", "back", "shoulders", "arms", "core", "leg
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 export type Muscles = Readonly<Record<MuscleGroup, number>>;
 export type Title = "Noodle" | "Gym Rookie" | "Lifter" | "Beast" | "Iron Legend";
-export type RoastLevel =
-  | "hype"
-  | "rest"
-  | "annoyed"
-  | "angry"
-  | "savage"
-  | "nuclear"
-  | "comeback";
+export const ROAST_LEVELS = [
+  "hype",
+  "rest",
+  "annoyed",
+  "angry",
+  "savage",
+  "nuclear",
+  "comeback",
+] as const;
+
+export type RoastLevel = (typeof ROAST_LEVELS)[number];
 
 export type AvatarMood = "hype" | "normal" | "slump" | "nuclear";
 
@@ -121,6 +124,11 @@ export function trainedGains(
   return trained
     .map((muscle) => ({ muscle, gain: after[muscle] - before[muscle] }))
     .filter(({ gain }) => gain > 0);
+}
+
+/** The lowest-scoring muscle. On a tie, the first in MUSCLE_GROUPS. */
+export function weakestMuscle(muscles: Muscles): MuscleGroup {
+  return MUSCLE_GROUPS.reduce((weakest, group) => (muscles[group] < muscles[weakest] ? group : weakest));
 }
 
 export function moodFor({ checkedInToday, skipDays }: State): AvatarMood {

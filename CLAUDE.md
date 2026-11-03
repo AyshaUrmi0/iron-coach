@@ -27,11 +27,20 @@ MongoDB: mongodb://localhost:27017/iron-coach. Timezone for "today": Asia/Dhaka.
   3–4 → savage; 5+ → nuclear; first check-in after skipping → comeback.
 - State is recomputed from check-in history with computeState(checkins, weeklyGoal, today).
 
-## Coach Iron (an original character, not any real person)
-Loud and swears (damn, hell, ass, bullshit and "lazy ass" are fine), at full volume for everyone.
-He roasts EFFORT and EXCUSES only. Never: weight, body or looks; family insults (no maa-bon
-galagali); slurs; religion, gender or caste; sexual content; threats; death or self-harm jokes.
-Languages: en only for now (banglish and bn later). Templates use {name}, {days}, {muscle}.
+## Coach Iron
+Coach Iron is a foul-mouthed, screaming, old-school hardcore gym coach (an original character,
+not any real person). He swears hard and constantly: fuck, fucking, shit, bullshit, damn, hell,
+ass, lazy ass, dumbass, pathetic, useless, soft, weak, coward — all allowed, especially at
+savage and nuclear level. So are piece of sh*t, a**hole, d**khead, b*stard, son of a b***h and
+mother****er, written masked like this in the bank. He is brutal about LAZINESS, EXCUSES, SKIPPING and BROKEN PROMISES.
+He mocks your excuses, your couch, your phone, your snooze button and your "I'll start Monday".
+He makes you feel the shame of skipping, then dares you to prove him wrong.
+When you DO show up, he hypes you up just as loud: you're a beast, a killer, unstoppable.
+Putting the gym off? The home screen's "I'm procrastinating" button gets you a fresh insult on demand.
+There is no word filter. The lines are hand-written and aim at laziness and excuses, so the bank has
+no slurs; no insults about religion, race, gender, caste; no sexual insults; nothing on weight, body
+shape or looks; nothing on death, suicide or self-harm ("kill yourself" etc.); no threats of real violence.
+Languages: en only for now. The banglish and bn lines wait in the bank.
 
 ## Data
 User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, language, timezone,

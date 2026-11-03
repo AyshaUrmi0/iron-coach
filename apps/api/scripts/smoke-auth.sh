@@ -51,7 +51,7 @@ check "read me"                       200 GET   /me
 check "update profile"                200 PATCH /me '{"name":"Smokey","bodyType":"female","weeklyGoal":5,"language":"en"}'
 check "goal out of range"             400 PATCH /me '{"weeklyGoal":8}'
 check "unknown body type"             400 PATCH /me '{"bodyType":"alien"}'
-check "language not offered yet"      400 PATCH /me '{"language":"bn"}'
+check "language not offered"          400 PATCH /me '{"language":"fr"}'
 check "email can't be patched"        400 PATCH /me '{"email":"other@example.com"}'
 check "passwordHash can't be patched" 400 PATCH /me '{"passwordHash":"x"}'
 check "broken JSON"                   400 PATCH /me '{"name":'

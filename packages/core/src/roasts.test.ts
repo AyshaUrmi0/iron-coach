@@ -1,6 +1,16 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- test inputs read best as plain numbers */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fillRoast, LANGUAGES, pickRoast, ROAST_BANK, type RoastVars } from "./roasts.js";
+import {
+  BANK_LANGUAGES,
+  fillRoast,
+  LANGUAGES,
+  pickProcrastinationRoast,
+  pickRoast,
+  PROCRASTINATION_ROASTS,
+  ROAST_BANK,
+  sampleRoasts,
+  type RoastVars,
+} from "./roasts.js";
 import type { RoastLevel } from "./state.js";
 
 const LEVELS: readonly RoastLevel[] = [
@@ -12,43 +22,20 @@ const LEVELS: readonly RoastLevel[] = [
   "nuclear",
   "comeback",
 ];
-const LINES_PER_LEVEL = 6;
+const LINES_PER_LEVEL = 8;
 const VARS: RoastVars = { name: "Rafi", days: 4, muscle: "CHEST" };
 
 const ALL_LINES = LEVELS.flatMap((level) =>
-  LANGUAGES.flatMap((language) => ROAST_BANK[level][language].map((line) => ({ level, language, line }))),
+  BANK_LANGUAGES.flatMap((language) => ROAST_BANK[level][language].map((line) => ({ level, language, line }))),
 );
-
-// Small on purpose: a safety net for slips, not a replacement for reading the lines.
-const BANNED_WORDS = new Set([
-  // weight, body, looks
-  "fat", "fatty", "skinny", "ugly", "chubby", "obese", "flabby", "belly",
-  // family
-  "mom", "mother", "dad", "father", "sister",
-  // slurs and harsher abuse
-  "bitch", "slut", "whore", "retard",
-  // sexual
-  "sex", "fuck",
-  // threats, death, self-harm
-  "kill", "die", "dead", "suicide",
-  // religion, gender
-  "god", "allah", "jesus", "hindu", "muslim", "girl", "sissy",
-]);
-
-function bannedWordsIn(text: string): string[] {
-  const words = new Intl.Segmenter(undefined, { granularity: "word" }).segment(text.toLowerCase());
-  return [...words]
-    .filter(({ isWordLike, segment }) => isWordLike && BANNED_WORDS.has(segment))
-    .map(({ segment }) => segment);
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
 describe("ROAST_BANK", () => {
-  it.each(LEVELS.flatMap((level) => LANGUAGES.map((language) => ({ level, language }))))(
-    "$level/$language has 6 different lines",
+  it.each(LEVELS.flatMap((level) => BANK_LANGUAGES.map((language) => ({ level, language }))))(
+    "$level/$language has 8 different lines",
     ({ level, language }) => {
       const lines = ROAST_BANK[level][language];
       expect(lines).toHaveLength(LINES_PER_LEVEL);
@@ -74,35 +61,6 @@ describe("ROAST_BANK", () => {
     );
     expect(misused).toEqual([]);
   });
-
-  it("uses {muscle} only right after a check-in", () => {
-    const afterCheckin: readonly RoastLevel[] = ["hype", "comeback"];
-    const misused = ALL_LINES.filter(
-      ({ level, line }) => !afterCheckin.includes(level) && line.includes("{muscle}"),
-    );
-    expect(misused).toEqual([]);
-  });
-
-  it("contains no banned words", () => {
-    const hits = ALL_LINES.filter(({ line }) => bannedWordsIn(line).length);
-    expect(hits).toEqual([]);
-  });
-});
-
-describe("bannedWordsIn", () => {
-  it.each([
-    ["You fat slacker", ["fat"]],
-    ["Ask your MOTHER", ["mother"]],
-  ])("catches %s", (text, found) => {
-    expect(bannedWordsIn(text)).toEqual(found);
-  });
-
-  it.each(["Your ass is lazy, damn it", "Fatigue is no excuse"])(
-    "allows %s",
-    (text) => {
-      expect(bannedWordsIn(text)).toEqual([]);
-    },
-  );
 });
 
 describe("fillRoast", () => {
@@ -115,11 +73,48 @@ describe("fillRoast", () => {
   });
 });
 
+describe("LANGUAGES", () => {
+  it("offers only English for now", () => {
+    expect(LANGUAGES).toEqual(["en"]);
+  });
+});
+
+describe("sampleRoasts", () => {
+  it.each(LANGUAGES)("gives different lines from the %s bank", (language) => {
+    const lines = sampleRoasts("savage", language, 6);
+    expect(lines).toHaveLength(6);
+    expect(new Set(lines).size).toBe(6);
+    lines.forEach((line) => expect(ROAST_BANK.savage[language]).toContain(line));
+  });
+});
+
+describe("pickProcrastinationRoast", () => {
+  it("has 20 different lines, none needing skip days or a muscle", () => {
+    const lines = PROCRASTINATION_ROASTS.en;
+    expect(new Set(lines).size).toBe(20);
+    lines.forEach((line) => expect(line).not.toMatch(/\{(days|muscle)\}/));
+  });
+
+  it("fills in the name", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    expect(PROCRASTINATION_ROASTS.en[0]).toContain("{name}");
+    const line = pickProcrastinationRoast("en", "Rafi");
+    expect(line).toContain("Rafi");
+    expect(line).not.toContain("{name}");
+  });
+
+  it("never repeats the line shown last", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const first = pickProcrastinationRoast("en", "Rafi");
+    expect(pickProcrastinationRoast("en", "Rafi", first)).not.toBe(first);
+  });
+});
+
 describe("pickRoast", () => {
   it.each([
     [0, 0],
-    [0.5, 3],
-    [0.999, 5],
+    [0.5, 4],
+    [0.999, 7],
   ])("with random %f picks line %i", (random, index) => {
     vi.spyOn(Math, "random").mockReturnValue(random);
     expect(pickRoast("savage", "en", VARS)).toBe(fillRoast(ROAST_BANK.savage.en[index], VARS));

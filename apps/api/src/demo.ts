@@ -3,10 +3,11 @@ import { addDays, dateInTimezone, type MuscleGroup } from "@iron-coach/core";
 import type { Types } from "mongoose";
 import { SESSION_MS } from "./auth.js";
 import { Checkin, type CheckinFields } from "./models/checkin.js";
+import { Roast } from "./models/roast.js";
 import { User, type UserDoc } from "./models/user.js";
 import { PLACEHOLDER_SELFIE_PATH } from "./selfies.js";
 
-const DEMO_NAME = "Rookie";
+const DEMO_NAME = "Badass Lazy Weak Lad";
 // Not a bcrypt hash, so no password can ever match it and demo accounts can't be logged in to.
 const NO_PASSWORD = "!demo-account-has-no-password";
 
@@ -70,6 +71,7 @@ export async function upgradeDemoUser(
   user.set({ ...account, isDemo: false, demoExpiresAt: undefined });
   await user.save();
   await Checkin.deleteMany({ userId: user._id, isSample: true });
+  await Roast.deleteOne({ userId: user._id });
   return user;
 }
 
@@ -78,6 +80,7 @@ export async function deleteExpiredDemoUsers(): Promise<number> {
   await Promise.all(
     expired.map(async ({ _id }) => {
       await Checkin.deleteMany({ userId: _id });
+      await Roast.deleteOne({ userId: _id });
       await User.deleteOne({ _id, isDemo: true });
     }),
   );

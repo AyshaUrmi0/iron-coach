@@ -16,6 +16,7 @@ cleanup() {
   docker exec iron-mongo mongosh --quiet iron-coach --eval "
     const ids = db.users.find({ email: /^$TAG/ }).map((u) => u._id).toArray();
     db.checkins.deleteMany({ userId: { \$in: ids } });
+    db.roasts.deleteMany({ userId: { \$in: ids } });
     db.users.deleteMany({ _id: { \$in: ids } });" >/dev/null
   for id in "$USER_A" "$USER_B"; do
     case "$id" in
