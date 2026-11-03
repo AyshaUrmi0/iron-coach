@@ -377,3 +377,39 @@ describe("starting body", () => {
     expect(startBodyFrame("muscular")).toBe(17);
   });
 });
+
+// Step 10: the whole picture for each situation, worked out by hand from the rules in CLAUDE.md.
+// Goal 3 allows 2 rest days. Every check-in here trains chest only.
+describe("simulated weeks", () => {
+  it("a perfect week: 7 check-ins in a row, with the streak bonus", () => {
+    const state = computeState(checkins(7, 1), 3, d(6));
+    expect(state.muscles).toEqual(scores("chest", 65, 30));
+    expect(state).toMatchObject({ streak: 7, skipDays: 0, roastLevel: "hype", title: "Gym Rookie" });
+    expect(moodFor(state)).toBe("hype");
+    expect(avatarFrame(state.average)).toBe(13);
+  });
+
+  it("a 2-day skip: angry coach, and still lean", () => {
+    const state = computeState(checkins(1, 1), 3, d(5));
+    expect(state.muscles).toEqual(scores("chest", 22, 17));
+    expect(state).toMatchObject({ streak: 0, skipDays: 2, roastLevel: "angry", title: "Noodle" });
+    expect(moodFor(state)).toBe("normal");
+    expect(avatarFrame(state.average)).toBe(10);
+  });
+
+  it("a 4-day skip: savage coach, slumped and heavy", () => {
+    const state = computeState(checkins(1, 1), 3, d(7));
+    expect(state.muscles).toEqual(scores("chest", 18, 13));
+    expect(state).toMatchObject({ streak: 0, skipDays: 4, roastLevel: "savage", title: "Noodle" });
+    expect(moodFor(state)).toBe("slump");
+    expect(avatarFrame(state.average)).toBe(2);
+  });
+
+  it("an 8-day skip: nuclear coach, at the lowest score and the heaviest body", () => {
+    const state = computeState(checkins(1, 1), 3, d(11));
+    expect(state.muscles).toEqual(scores("chest", 10, 10));
+    expect(state).toMatchObject({ streak: 0, skipDays: 8, roastLevel: "nuclear", title: "Noodle" });
+    expect(moodFor(state)).toBe("nuclear");
+    expect(avatarFrame(state.average)).toBe(0);
+  });
+});

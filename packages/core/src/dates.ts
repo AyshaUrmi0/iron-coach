@@ -1,5 +1,6 @@
 const MS_PER_DAY = 86_400_000;
 const DATE_LENGTH = "YYYY-MM-DD".length;
+const MONTH_LENGTH = "YYYY-MM".length;
 
 function toDayNumber(date: string): number {
   const [year, month, day] = date.split("-").map(Number);
@@ -15,6 +16,24 @@ export function daysBetween(from: string, to: string): number {
 /** The "YYYY-MM-DD" date a number of days after another. Negative goes back. */
 export function addDays(date: string, days: number): string {
   return new Date((toDayNumber(date) + days) * MS_PER_DAY).toISOString().slice(0, DATE_LENGTH);
+}
+
+/** The "YYYY-MM" month a number of months after another. Negative goes back. */
+export function addMonths(month: string, months: number): string {
+  const [year, monthNumber] = month.split("-").map(Number);
+  return new Date(Date.UTC(year, monthNumber - 1 + months, 1)).toISOString().slice(0, MONTH_LENGTH);
+}
+
+/** Every "YYYY-MM-DD" date in a "YYYY-MM" month. */
+export function datesInMonth(month: string): string[] {
+  const first = `${month}-01`;
+  const days = daysBetween(first, `${addMonths(month, 1)}-01`);
+  return Array.from({ length: days }, (_, index) => addDays(first, index));
+}
+
+/** 0 is Sunday, 6 is Saturday. */
+export function weekdayOf(date: string): number {
+  return new Date(toDayNumber(date) * MS_PER_DAY).getUTCDay();
 }
 
 /** The "YYYY-MM-DD" date at a given moment in an IANA timezone. */

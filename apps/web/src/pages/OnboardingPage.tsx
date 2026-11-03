@@ -4,14 +4,11 @@ import { START_BODIES, startBodyFrame } from "@iron-coach/core";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useNavigate } from "react-router";
-import { ApiError, OFFLINE_MESSAGE, type User } from "../api";
+import { ApiError, BODY_TYPES, OFFLINE_MESSAGE, WEEKLY_GOALS, type User } from "../api";
 import { useMe, useUpdateMe } from "../auth";
 import { frameUrl } from "../components/Avatar";
 import { ChoiceChips } from "../components/ChoiceChips";
 
-const BODY_TYPES: readonly User["bodyType"][] = ["male", "female"];
-// eslint-disable-next-line ts-patterns/no-magic-numbers -- the allowed weekly goals, from the rules in CLAUDE.md
-const WEEKLY_GOALS: readonly number[] = [2, 3, 4, 5, 6, 7];
 // const LANGUAGE_LABELS: Readonly<Record<Language, string>> = { en: "English" };
 
 const SLIDE_DISTANCE = 60;
