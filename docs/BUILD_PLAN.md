@@ -43,7 +43,7 @@ Test it with curl and show me the output.
 
 ## Step 5: API (check-ins and state)
 
-- POST /api/checkins: multipart with a "selfie" image (multer, max 5 MB, jpeg/png/webp only) and
+- POST /api/checkins: multipart with a "selfie" image (multer, max 4 MB because of Vercel's request limit, jpeg/png/webp only) and
   "muscles" (an array of the 6 group names, at least 1). The server sets the date in the user's timezone.
   A second check-in on the same day gets a 409. Save files to apps/api/uploads/<userId>/ with a random filename.
 - GET /api/checkins?month=YYYY-MM for the calendar.

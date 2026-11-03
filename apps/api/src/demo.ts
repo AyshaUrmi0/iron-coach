@@ -2,11 +2,10 @@ import { randomUUID } from "node:crypto";
 import { addDays, dateInTimezone, type MuscleGroup } from "@iron-coach/core";
 import { Checkin } from "./models/checkin.js";
 import { User, type UserDoc } from "./models/user.js";
-import { deleteUserSelfies, writePlaceholderSelfie } from "./selfies.js";
+import { PLACEHOLDER_SELFIE_PATH } from "./selfies.js";
 
 const DEMO_NAME = "Rookie";
 const DEMO_LIFETIME_MS = 604_800_000; // 7 days, the same as a login session
-const SWEEP_EVERY_MS = 3_600_000; // 1 hour
 // Not a bcrypt hash, so no password can ever match it and demo accounts can't be logged in to.
 const NO_PASSWORD = "!demo-account-has-no-password";
 
@@ -30,7 +29,6 @@ export async function createDemoUser(): Promise<UserDoc> {
     isDemo: true,
     demoExpiresAt: new Date(Date.now() + DEMO_LIFETIME_MS),
   });
-  const selfiePath = await writePlaceholderSelfie(user._id.toString());
   const today = dateInTimezone(new Date(), user.timezone);
   await Checkin.insertMany(
     SAMPLE_CHECKINS.map(({ daysAgo, muscles }) => {
@@ -40,7 +38,7 @@ export async function createDemoUser(): Promise<UserDoc> {
         date,
         takenAt: new Date(`${date}T12:00:00Z`),
         muscles,
-        selfiePath,
+        selfiePath: PLACEHOLDER_SELFIE_PATH,
         isSample: true,
       };
     }),
@@ -64,21 +62,8 @@ export async function deleteExpiredDemoUsers(): Promise<number> {
   await Promise.all(
     expired.map(async ({ _id }) => {
       await Checkin.deleteMany({ userId: _id });
-      await deleteUserSelfies(_id.toString());
       await User.deleteOne({ _id, isDemo: true });
     }),
   );
   return expired.length;
-}
-
-export function startDemoSweep(): void {
-  const sweep = async (): Promise<void> => {
-    try {
-      await deleteExpiredDemoUsers();
-    } catch (err) {
-      console.error("Demo cleanup failed, will try again next hour.", err);
-    }
-  };
-  void sweep();
-  setInterval(() => void sweep(), SWEEP_EVERY_MS).unref();
 }

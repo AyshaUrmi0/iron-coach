@@ -77,7 +77,7 @@ check "demo can change settings"            200 '"weeklyGoal":3' demo.jar -X PAT
 check "demo check-in"                       201 '"muscles":["legs"]' demo.jar -X POST -F muscles=legs -F "selfie=@selfie.png" "$API/checkins"
 CHECKIN="$(grep -o '"id":"[0-9a-f]\{24\}"' body | head -1 | cut -d'"' -f4)"
 check "comeback after the sample skip days" 200 '"roastLevel":"comeback"' demo.jar "$API/state"
-same "demo photo was not stored" "$(ls "$UPLOADS/$DEMO")" "placeholder.png"
+[ ! -e "$UPLOADS/$DEMO" ]; same "demo photo was not stored" "$?" 0
 check "demo selfie is the placeholder"      200 "" demo.jar "$API/selfies/$CHECKIN"
 cmp -s selfie.png body; same "uploaded photo is not served back" "$?" 1
 check "other visitor can't see it"          404 "Selfie not found" other.jar "$API/selfies/$CHECKIN"
@@ -104,7 +104,6 @@ mongo "db.users.updateOne({ _id: ObjectId('$REAL') }, { \$set: { demoExpiresAt: 
 check "sweep deletes the expired demo"      200 '"deleted":' real.jar -X POST "$API/dev/sweep-demos"
 check "expired demo is logged out"          401 "Log in first" other.jar "$API/me"
 same "expired demo's check-ins are gone" "$(checkin_count "$OTHER")" 0
-[ ! -e "$UPLOADS/$OTHER" ]; same "expired demo's files are gone" "$?" 0
 check "real account survives the sweep"     200 '"isDemo":false' real.jar "$API/me"
 check "upgraded account survives the sweep" 200 '"isDemo":false' demo.jar "$API/me"
 

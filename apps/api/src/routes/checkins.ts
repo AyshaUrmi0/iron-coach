@@ -13,12 +13,12 @@ import {
 import { Checkin, musclesSchema, toPublicCheckin } from "../models/checkin.js";
 import {
   newSelfiePath,
+  PLACEHOLDER_SELFIE_PATH,
   sniffImageExtension,
-  writePlaceholderSelfie,
   writeSelfie,
 } from "../selfies.js";
 
-const MAX_SELFIE_BYTES = 5_242_880; // 5 MB
+const MAX_SELFIE_BYTES = 4_194_304; // 4 MB: Vercel refuses request bodies over 4.5 MB
 
 // Kept in memory so nothing reaches the disk until the upload has passed every check.
 const upload = multer({
@@ -51,9 +51,7 @@ checkinsRouter.post("/", upload.single("selfie"), async (req, res) => {
   const takenAt = new Date();
   const userId = user._id.toString();
   // Demo visitors are anonymous, so their photos are never kept.
-  const selfiePath = user.isDemo
-    ? await writePlaceholderSelfie(userId)
-    : newSelfiePath(userId, extension);
+  const selfiePath = user.isDemo ? PLACEHOLDER_SELFIE_PATH : newSelfiePath(userId, extension);
 
   // Saved before the file, so a second check-in today is refused without leaving a stray selfie.
   const checkin = await Checkin.create({

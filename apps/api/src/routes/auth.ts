@@ -12,10 +12,16 @@ import {
   isDuplicateKeyError,
 } from "../http.js";
 import { nameSchema, toPublicUser, User, type UserDoc } from "../models/user.js";
+import { rateLimit } from "../rateLimit.js";
 
 const BCRYPT_ROUNDS = 12;
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_BYTES = 72;
+const ONE_HOUR_MS = 3_600_000;
+const FIFTEEN_MINUTES_MS = 900_000;
+const MAX_LOGINS = 20;
+const MAX_SIGNUPS = 10;
+const MAX_DEMOS = 10;
 
 const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
 
@@ -52,30 +58,42 @@ async function createAccount(
 
 export const authRouter = Router();
 
-authRouter.post("/register", async (req, res) => {
-  const { name, email, password } = registerSchema.parse(req.body);
-  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  // Signing up from a demo keeps what the visitor did there.
-  const user = await createAccount(await currentDemoUser(req), { name, email, passwordHash });
-  setAuthCookie(res, user._id.toString());
-  res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
-});
+authRouter.post(
+  "/register",
+  rateLimit({ name: "register", limit: MAX_SIGNUPS, windowMs: ONE_HOUR_MS }),
+  async (req, res) => {
+    const { name, email, password } = registerSchema.parse(req.body);
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    // Signing up from a demo keeps what the visitor did there.
+    const user = await createAccount(await currentDemoUser(req), { name, email, passwordHash });
+    setAuthCookie(res, user._id.toString());
+    res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
+  },
+);
 
-authRouter.post("/demo", async (_req, res) => {
-  const user = await createDemoUser();
-  setAuthCookie(res, user._id.toString());
-  res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
-});
+authRouter.post(
+  "/demo",
+  rateLimit({ name: "demo", limit: MAX_DEMOS, windowMs: ONE_HOUR_MS }),
+  async (_req, res) => {
+    const user = await createDemoUser();
+    setAuthCookie(res, user._id.toString());
+    res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
+  },
+);
 
-authRouter.post("/login", async (req, res) => {
-  const { email, password } = loginSchema.parse(req.body);
-  const user = await User.findOne({ email });
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    throw new HttpError(HTTP_UNAUTHORIZED, "Wrong email or password.");
-  }
-  setAuthCookie(res, user._id.toString());
-  res.json({ user: toPublicUser(user) });
-});
+authRouter.post(
+  "/login",
+  rateLimit({ name: "login", limit: MAX_LOGINS, windowMs: FIFTEEN_MINUTES_MS }),
+  async (req, res) => {
+    const { email, password } = loginSchema.parse(req.body);
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      throw new HttpError(HTTP_UNAUTHORIZED, "Wrong email or password.");
+    }
+    setAuthCookie(res, user._id.toString());
+    res.json({ user: toPublicUser(user) });
+  },
+);
 
 authRouter.post("/logout", (_req, res) => {
   clearAuthCookie(res);
