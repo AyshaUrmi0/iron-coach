@@ -54,6 +54,7 @@ export function AuthPoster({
   const [fieldErrors, setFieldErrors] = useState<Readonly<Record<string, string | undefined>>>({});
   const [formError, setFormError] = useState<string>();
   const [failCount, setFailCount] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
 
   const loaded = fields.map(({ name, validate }) => !validate(values[name] ?? ""));
   const ready = loaded.every(Boolean);
@@ -78,6 +79,8 @@ export function AuthPoster({
 
     setFieldErrors({});
     setFormError(undefined);
+    // Back to a password field, so password managers offer to save it.
+    setShowPassword(false);
     try {
       await onSubmit(values);
     } catch (err) {
@@ -141,13 +144,25 @@ export function AuthPoster({
             const error = fieldErrors[name];
             return (
               <div key={name} className="flex flex-col gap-1.5">
-                <label htmlFor={id} className="font-semibold">
-                  {label}
-                </label>
+                <div className="flex items-baseline justify-between">
+                  <label htmlFor={id} className="font-semibold">
+                    {label}
+                  </label>
+                  {type === "password" && (
+                    <button
+                      type="button"
+                      aria-pressed={showPassword}
+                      onClick={() => setShowPassword((shown) => !shown)}
+                      className="cursor-pointer font-semibold text-steel underline underline-offset-4 hover:text-hazard"
+                    >
+                      Show password
+                    </button>
+                  )}
+                </div>
                 <input
                   id={id}
                   name={name}
-                  type={type}
+                  type={type === "password" && showPassword ? "text" : type}
                   autoComplete={autoComplete}
                   required
                   value={values[name] ?? ""}
