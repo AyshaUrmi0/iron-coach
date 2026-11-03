@@ -25,7 +25,7 @@ const createSchema = z.object({
   muscles: z.preprocess((value) => (typeof value === "string" ? [value] : value), musclesSchema),
 });
 
-const listSchema = z.object({
+export const monthSchema = z.object({
   month: z.string().refine((month) => z.iso.date().safeParse(`${month}-01`).success, {
     error: "Must be a month like 2026-03.",
   }),
@@ -68,7 +68,7 @@ checkinsRouter.post("/", upload.single("selfie"), async (req, res) => {
 });
 
 checkinsRouter.get("/", async (req, res) => {
-  const { month } = listSchema.parse(req.query);
+  const { month } = monthSchema.parse(req.query);
   const user = await currentUser(req);
   const checkins = await Checkin.find({
     userId: user._id,

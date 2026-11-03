@@ -1,4 +1,4 @@
-import { LANGUAGES, MAX_NAME_LENGTH, START_BODIES } from "@iron-coach/core";
+import { LANGUAGES, MAX_NAME_LENGTH, MAX_PROTEIN_GOAL, MIN_PROTEIN_GOAL, START_BODIES } from "@iron-coach/core";
 import { model, Schema, type HydratedDocument, type InferSchemaType } from "mongoose";
 import { z } from "zod";
 
@@ -8,6 +8,7 @@ export const MIN_WEEKLY_GOAL = 2;
 export const MAX_WEEKLY_GOAL = 7;
 
 const DEFAULT_WEEKLY_GOAL = 3;
+const DEFAULT_PROTEIN_GOAL = 100;
 
 // Register only asks for name, email and password. Onboarding sets the rest.
 const userSchema = new Schema(
@@ -23,6 +24,13 @@ const userSchema = new Schema(
       min: MIN_WEEKLY_GOAL,
       max: MAX_WEEKLY_GOAL,
       default: DEFAULT_WEEKLY_GOAL,
+    },
+    proteinGoal: {
+      type: Number,
+      required: true,
+      min: MIN_PROTEIN_GOAL,
+      max: MAX_PROTEIN_GOAL,
+      default: DEFAULT_PROTEIN_GOAL,
     },
     language: { type: String, enum: LANGUAGES, required: true, default: "en" },
     timezone: { type: String, required: true, default: "Asia/Dhaka" },
@@ -43,6 +51,7 @@ export interface PublicUser {
   readonly bodyType: UserDoc["bodyType"];
   readonly startBody: UserDoc["startBody"];
   readonly weeklyGoal: number;
+  readonly proteinGoal: number;
   readonly language: UserDoc["language"];
   readonly timezone: string;
   readonly isDemo: boolean;
@@ -57,6 +66,7 @@ export function toPublicUser(user: UserDoc): PublicUser {
     bodyType: user.bodyType,
     startBody: user.startBody,
     weeklyGoal: user.weeklyGoal,
+    proteinGoal: user.proteinGoal,
     language: user.language,
     timezone: user.timezone,
     isDemo: user.isDemo,

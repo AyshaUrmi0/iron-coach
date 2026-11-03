@@ -9,7 +9,10 @@ export function AppHeader(): ReactElement {
       <Link to="/" className="font-display text-3xl font-black uppercase">
         Iron Coach
       </Link>
-      <nav aria-label="Main" className="flex items-center gap-5 font-semibold">
+      <nav aria-label="Main" className="flex items-center gap-4 font-semibold sm:gap-5">
+        <NavLink to="/meals" className={LINK_STYLE}>
+          Meals
+        </NavLink>
         <NavLink to="/history" className={LINK_STYLE}>
           History
         </NavLink>

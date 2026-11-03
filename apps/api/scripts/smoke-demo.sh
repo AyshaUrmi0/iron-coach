@@ -15,7 +15,7 @@ mongo() { docker exec iron-mongo mongosh --quiet iron-coach --eval "$1"; }
 
 cleanup() {
   for id in $CREATED_IDS; do
-    mongo "db.checkins.deleteMany({ userId: ObjectId('$id') }); db.roasts.deleteOne({ userId: ObjectId('$id') }); db.users.deleteOne({ _id: ObjectId('$id') });" >/dev/null
+    mongo "db.checkins.deleteMany({ userId: ObjectId('$id') }); db.meals.deleteMany({ userId: ObjectId('$id') }); db.roasts.deleteOne({ userId: ObjectId('$id') }); db.users.deleteOne({ _id: ObjectId('$id') });" >/dev/null
     rm -rf "${UPLOADS:?}/$id"
   done
   rmdir "$UPLOADS" 2>/dev/null
@@ -42,6 +42,7 @@ remember_id() {
 demo_email() { mongo "db.users.findOne({ _id: ObjectId('$1') }).email"; }
 sample_count() { mongo "db.checkins.countDocuments({ userId: ObjectId('$1'), isSample: true })"; }
 checkin_count() { mongo "db.checkins.countDocuments({ userId: ObjectId('$1') })"; }
+meal_count() { mongo "db.meals.countDocuments({ userId: ObjectId('$1') })"; }
 
 cd "$WORK" || exit 1
 JSON='Content-Type: application/json'
@@ -69,6 +70,8 @@ check "comeback after the sample skip days" 200 '"roastLevel":"comeback"' demo.j
 check "demo selfie is the placeholder"      200 "" demo.jar "$API/selfies/$CHECKIN"
 cmp -s selfie.png body; same "uploaded photo is not served back" "$?" 1
 check "other visitor can't see it"          404 "Selfie not found" other.jar "$API/selfies/$CHECKIN"
+check "demo can log a meal"                 201 '"name":"Eggs"' demo.jar -H "$JSON" -d '{"name":"Eggs","protein":12}' "$API/meals"
+check "other demo can log a meal"           201 '"name":"Eggs"' other.jar -H "$JSON" -d '{"name":"Eggs","protein":12}' "$API/meals"
 
 check "real account for the next tests"     201 '"isDemo":false' real.jar -H "$JSON" -d "{\"name\":\"Real\",\"email\":\"$TAG-real@example.com\",\"password\":\"$PASSWORD\"}" "$API/auth/register"
 remember_id; REAL="$LAST_ID"
@@ -79,6 +82,7 @@ check "sign up keeps the same account"      201 "\"id\":\"$DEMO\"" demo.jar -H "
 check "account is real now"                 200 '"isDemo":false' demo.jar "$API/me"
 same "sample check-ins removed" "$(sample_count "$DEMO")" 0
 same "visitor's own check-in kept" "$(checkin_count "$DEMO")" 1
+same "visitor's own meal kept" "$(meal_count "$DEMO")" 1
 check "settings kept"                       200 '"bodyType":"female"' demo.jar "$API/me"
 check "real check-in stays on today"        200 '"checkedInToday":true' demo.jar "$API/state"
 check "logs in with the new password"       200 "\"id\":\"$DEMO\"" fresh.jar -H "$JSON" -d "{\"email\":\"$TAG-kept@example.com\",\"password\":\"$PASSWORD\"}" "$API/auth/login"
@@ -92,6 +96,7 @@ mongo "db.users.updateOne({ _id: ObjectId('$REAL') }, { \$set: { demoExpiresAt: 
 check "sweep deletes the expired demo"      200 '"deleted":' real.jar -X POST "$API/dev/sweep-demos"
 check "expired demo is logged out"          401 "Log in first" other.jar "$API/me"
 same "expired demo's check-ins are gone" "$(checkin_count "$OTHER")" 0
+same "expired demo's meals are gone" "$(meal_count "$OTHER")" 0
 check "real account survives the sweep"     200 '"isDemo":false' real.jar "$API/me"
 check "upgraded account survives the sweep" 200 '"isDemo":false' demo.jar "$API/me"
 

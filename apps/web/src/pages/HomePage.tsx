@@ -10,6 +10,7 @@ import { ConnectionError } from "../components/ConnectionError";
 import { Flame } from "../components/Flame";
 import { GainBurst } from "../components/GainBurst";
 import { MuscleBars } from "../components/MuscleBars";
+import { TodaysProtein } from "../components/TodaysProtein";
 import { useGameState, type CheckinCelebration, type GameState } from "../gameState";
 
 // The screen is at its reddest and darkest from this many skip days, when the coach goes nuclear.
@@ -105,6 +106,8 @@ function Home({ state, roast }: GameState): ReactElement {
             I'm procrastinating. Insult me.
           </button>
         )}
+
+        {user && <TodaysProtein user={user} showLink />}
 
         <div className="grid flex-1 gap-5 lg:grid-cols-[14rem_1fr_18rem]">
           <section aria-label="Your stats" className="flex flex-col gap-3">

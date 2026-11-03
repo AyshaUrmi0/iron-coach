@@ -1,4 +1,4 @@
-import { MAX_NAME_LENGTH, START_BODIES, startBodyFrame } from "@iron-coach/core";
+import { MAX_NAME_LENGTH, MAX_PROTEIN_GOAL, MIN_PROTEIN_GOAL, START_BODIES, startBodyFrame } from "@iron-coach/core";
 import { useId, useState, type FormEvent, type ReactElement } from "react";
 import { ApiError, BODY_TYPES, OFFLINE_MESSAGE, WEEKLY_GOALS, type User } from "../api";
 import { useLogout, useMe, useUpdateMe } from "../auth";
@@ -7,6 +7,8 @@ import { frameUrl } from "../components/Avatar";
 import { ChoiceChips } from "../components/ChoiceChips";
 
 const TITLE_STYLE = "mb-3 block font-display text-3xl font-black uppercase";
+const INPUT_STYLE =
+  "w-full border-b-4 border-steel bg-plate px-3.5 py-3 text-lg text-chalk transition-colors focus:border-hazard focus:outline-none aria-invalid:border-hazard";
 
 function SectionTitle({ children }: { readonly children: string }): ReactElement {
   // Hidden from screen readers, which already hear the same words from the choices' legend.
@@ -22,17 +24,24 @@ function Settings({ user }: { readonly user: User }): ReactElement {
   const logout = useLogout();
   const nameId = useId();
   const nameErrorId = useId();
+  const goalId = useId();
+  const goalErrorId = useId();
   const [name, setName] = useState(user.name);
   const [bodyType, setBodyType] = useState(user.bodyType);
   const [startBody, setStartBody] = useState(user.startBody);
   const [weeklyGoal, setWeeklyGoal] = useState(user.weeklyGoal);
+  const [proteinGoal, setProteinGoal] = useState(String(user.proteinGoal));
   const trimmedName = name.trim();
+  const parsedGoal = Number(proteinGoal);
+  const goalIsValid =
+    Number.isInteger(parsedGoal) && parsedGoal >= MIN_PROTEIN_GOAL && parsedGoal <= MAX_PROTEIN_GOAL;
   const unchanged =
     trimmedName === user.name &&
     bodyType === user.bodyType &&
     startBody === user.startBody &&
-    weeklyGoal === user.weeklyGoal;
-  const canSave = !unchanged && Boolean(trimmedName) && !update.isPending;
+    weeklyGoal === user.weeklyGoal &&
+    parsedGoal === user.proteinGoal;
+  const canSave = !unchanged && Boolean(trimmedName) && goalIsValid && !update.isPending;
   const logoutLabel = user.isDemo ? "Leave demo" : "Log out";
 
   function saveLabel(): string {
@@ -42,7 +51,7 @@ function Settings({ user }: { readonly user: User }): ReactElement {
 
   function handleSubmit(event: FormEvent): void {
     event.preventDefault();
-    if (canSave) update.mutate({ name: trimmedName, bodyType, startBody, weeklyGoal });
+    if (canSave) update.mutate({ name: trimmedName, bodyType, startBody, weeklyGoal, proteinGoal: parsedGoal });
   }
 
   return (
@@ -65,7 +74,7 @@ function Settings({ user }: { readonly user: User }): ReactElement {
             aria-invalid={!trimmedName}
             aria-describedby={trimmedName ? undefined : nameErrorId}
             onChange={(event) => setName(event.target.value)}
-            className="w-full border-b-4 border-steel bg-plate px-3.5 py-3 text-lg text-chalk transition-colors focus:border-hazard focus:outline-none aria-invalid:border-hazard"
+            className={INPUT_STYLE}
           />
           {!trimmedName && (
             <p id={nameErrorId} className="mt-2 font-medium text-hazard">
@@ -98,6 +107,27 @@ function Settings({ user }: { readonly user: User }): ReactElement {
           <SectionTitle>Days per week</SectionTitle>
           <p className="mb-3 text-steel">This changes your rest days, so it can change your skip days right away.</p>
           <ChoiceChips legend="Days per week" options={WEEKLY_GOALS} value={weeklyGoal} onChange={setWeeklyGoal} />
+        </section>
+
+        <section>
+          <label htmlFor={goalId} className={TITLE_STYLE}>
+            Daily protein goal (grams)
+          </label>
+          <input
+            id={goalId}
+            type="text"
+            inputMode="numeric"
+            value={proteinGoal}
+            aria-invalid={!goalIsValid}
+            aria-describedby={goalIsValid ? undefined : goalErrorId}
+            onChange={(event) => setProteinGoal(event.target.value)}
+            className={INPUT_STYLE}
+          />
+          {!goalIsValid && (
+            <p id={goalErrorId} className="mt-2 font-medium text-hazard">
+              Enter a whole number from {MIN_PROTEIN_GOAL} to {MAX_PROTEIN_GOAL}.
+            </p>
+          )}
         </section>
 
         {update.isError && (

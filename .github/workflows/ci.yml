@@ -54,6 +54,7 @@ jobs:
       - run: bash apps/api/scripts/smoke-auth.sh
       - run: bash apps/api/scripts/smoke-checkins.sh
       - run: bash apps/api/scripts/smoke-demo.sh
+      - run: bash apps/api/scripts/smoke-meals.sh
       - name: Show the API log
         if: failure()
         run: cat api.log
