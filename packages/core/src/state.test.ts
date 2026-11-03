@@ -1,7 +1,7 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
 import { addDays, dateInTimezone, daysBetween } from "./dates.js";
-import { computeState, moodFor, titleFor, trainedGains, weakestMuscle, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
+import { AVATAR_FRAMES, averageScore, avatarFrame, computeState, moodFor, startBodyFrame, titleFor, trainedGains, weakestMuscle, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
 const d = (n: number): string => new Date(Date.UTC(2026, 0, 1 + n)).toISOString().slice(0, 10);
@@ -307,5 +307,73 @@ describe("titleFor", () => {
     [100, "Iron Legend"],
   ])("average %f is %s", (average, title) => {
     expect(titleFor(average)).toBe(title);
+  });
+});
+
+describe("avatarFrame", () => {
+  it.each([
+    [10, 0],
+    [12, 1],
+    [14, 2],
+    [14.99, 3],
+    [15, 10],
+    [18, 10],
+    [20, 10],
+    [60, 17],
+    [100, 24],
+  ])("average %f rests on frame %i", (average, frame) => {
+    expect(avatarFrame(average)).toBe(frame);
+  });
+
+  it("never rests on the see-through morph frames", () => {
+    for (let average = 10; average <= 100; average += 0.25) {
+      const frame = avatarFrame(average);
+      expect(frame >= 4 && frame <= 9).toBe(false);
+    }
+  });
+
+  it("has a picture for every frame, and never shrinks as the score grows", () => {
+    let last = avatarFrame(10);
+    for (let average = 10; average <= 100; average += 0.25) {
+      const frame = avatarFrame(average);
+      expect(frame).toBeGreaterThanOrEqual(last);
+      expect(frame).toBeLessThan(AVATAR_FRAMES);
+      last = frame;
+    }
+  });
+});
+
+describe("averageScore", () => {
+  it("averages the six muscles", () => {
+    expect(averageScore(scores("chest", 80, 20))).toBe(30);
+  });
+});
+
+describe("starting body", () => {
+  it.each([
+    [undefined, 20],
+    ["lean", 20],
+    ["heavy", 10],
+    ["muscular", 60],
+  ] as const)("%s starts at an average of %i", (startBody, average) => {
+    expect(computeState([], 3, d(0), startBody).average).toBe(average);
+  });
+
+  it("a heavy body grows with a check-in", () => {
+    expect(computeState(checkins(1, 1), 3, d(0), "heavy").muscles).toEqual(scores("chest", 16, 11));
+  });
+
+  it("a muscular body shrinks with skip days", () => {
+    expect(computeState(checkins(1, 1), 3, d(5), "muscular").muscles).toEqual(scores("chest", 62, 57));
+  });
+
+  it("a heavy body never drops below the lowest score", () => {
+    expect(computeState(checkins(1, 1), 3, d(60), "heavy").average).toBe(10);
+  });
+
+  it("each choice shows the picture its score rests on", () => {
+    expect(startBodyFrame("heavy")).toBe(0);
+    expect(startBodyFrame("lean")).toBe(10);
+    expect(startBodyFrame("muscular")).toBe(17);
   });
 });

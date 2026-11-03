@@ -60,25 +60,21 @@ an API client with TanStack Query, and a protected-route wrapper that sends logg
 Build the login and register pages in the dark, loud gym style from CLAUDE.md.
 Make sure I can register, log in and log out in the browser.
 
-## Step 7: The 3D avatar (build it in a playground first)
+## Step 7: The avatar (build it in a playground first)
 
-Build apps/web/src/avatar/Avatar.tsx with @react-three/fiber and drei, as a procedural, stylised
-clay-toy body made of capsules and spheres. Props: bodyType ("male"|"female"), muscles (the 6 scores),
-mood ("hype"|"normal"|"slump"|"nuclear"), flexKey (number).
-- Each muscle score scales its body parts with scale = 0.75 + (score / 100) * 0.6:
-  chest → pec shapes, shoulders → deltoid spheres, arms → upper arm + forearm thickness,
-  back → torso width, core → six ab blocks (visible above 50), legs → thigh + calf thickness.
-- Male base: wider shoulders, narrow hips, slightly taller. Female base: narrower shoulders, a defined
-  waist, wider hips, a softer rounded chest shape. Keep it tasteful.
-- Sizes ease toward their targets every frame (no jumping).
-- Animations: idle breathing; a flex pose when flexKey changes (arms up, biceps pulse);
-  a slumped, head-down pose for "slump"; a small shiver for "nuclear".
-- A toon material, soft lighting, a slowly rotating round platform, and OrbitControls (no zoom).
-Also make a dev-only page /avatar-lab with sliders for every muscle, body type and mood, plus a
-"Flex" button, so I can tune the look.
+The first plan was a code-built 3D clay body, dropped after two tries didn't look right. The avatar now
+uses frames cut from our own video instead: see "Avatar" in DESIGN.md.
+Build apps/web/src/components/Avatar.tsx. Props: muscles (the 6 scores), mood ("hype"|"normal"|"slump"|"nuclear"),
+startFrom (scores to grow from), flexKey (number).
+- The average score picks the frame with avatarFrame() in packages/core.
+- The body steps through the frames toward its target (no jumping).
+- Animations: idle breathing; a flex when flexKey changes; darker and leaning for "slump"; a shiver for "nuclear".
+Also make a dev-only page /avatar-lab with a score slider and mood choice, plus a "Flex" button, so I can tune the look.
 (Afterwards, I will spend time in /avatar-lab asking for visual fixes before moving on.)
 
 ## Step 8: Onboarding and home screen
+
+Onboarding also has a "Starting shape" step: heavy, lean or muscular, shown with avatar pictures.
 
 Build /onboarding (4 steps with Motion transitions): 1) pick a body type, showing two small rotating
 avatar previews; 2) the weekly goal as big chips (2–7); 3) the roast language; 4) "Meet Coach Iron":

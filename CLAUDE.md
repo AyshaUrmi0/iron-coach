@@ -1,14 +1,13 @@
 # Iron Coach: project rules
 
-Web app: a savage gym coach roasts users who skip the gym, and a 3D avatar's muscles grow with
-selfie check-ins and shrink when they skip. Users: me and my friends. The UI is in English.
+Web app: a savage gym coach roasts users who skip the gym, and an avatar's body grows with
+selfie check-ins and shrinks when they skip. Users: me and my friends. The UI is in English.
 
 Full design: docs/DESIGN.md. Build steps: docs/BUILD_PLAN.md. Only do the step I ask for.
 
 ## Stack
 pnpm monorepo:
 - apps/web: React + Vite + TypeScript + Tailwind v4 + React Router + TanStack Query + Motion
-  + @react-three/fiber + @react-three/drei
 - apps/api: Node + Express + TypeScript + Mongoose + Zod + bcrypt + JWT in an HttpOnly cookie + multer
 - packages/core: pure TypeScript rules and roasts, tested with Vitest
 
@@ -18,7 +17,7 @@ MongoDB: mongodb://localhost:27017/iron-coach. Timezone for "today": Asia/Dhaka.
 - weeklyGoal is 2–7. Allowed rest days between sessions: 2→3, 3→2, 4/5/6→1, 7→0.
 - skipDays = days since the last check-in − 1 − allowedRest (min 0). No check-ins yet → 0.
 - streak = consecutive check-ins whose gap stayed within the allowed rest.
-- 6 muscle groups: chest, back, shoulders, arms, core, legs. Scores run 0–100 and start at 20.
+- 6 muscle groups: chest, back, shoulders, arms, core, legs. Scores run 0–100. They start from the body picked in onboarding: heavy 10, lean 20, muscular 60.
 - Check-in (max 1 per day): +6 to trained groups, +1 to the others, capped at 100.
 - Each skip day (between check-ins and up to today): −2 to all groups, never below 10.
 - Every 7-check-in streak: +3 to all groups.
@@ -43,7 +42,7 @@ shape or looks; nothing on death, suicide or self-harm ("kill yourself" etc.); n
 Languages: en only for now. The banglish and bn lines wait in the bank.
 
 ## Data
-User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, language, timezone,
+User: { name, email, passwordHash, bodyType: "male"|"female", startBody: "heavy"|"lean"|"muscular", weeklyGoal, language, timezone,
 isDemo, demoExpiresAt }
 Check-in: { userId, date "YYYY-MM-DD" (unique per user), takenAt, muscles[], selfiePath, isSample }
 Selfies are private: only the owner can fetch them. Camera capture only, no file picker.

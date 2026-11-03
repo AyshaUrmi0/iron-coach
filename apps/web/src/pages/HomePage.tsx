@@ -3,7 +3,7 @@ import { useAnimate, useReducedMotion } from "motion/react";
 import { useEffect, useState, type ReactElement } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useMe } from "../auth";
-import { AvatarSlot } from "../components/AvatarSlot";
+import { Avatar } from "../components/Avatar";
 import { CoachBubble } from "../components/CoachBubble";
 import { ConnectionError } from "../components/ConnectionError";
 import { GainBurst } from "../components/GainBurst";
@@ -134,7 +134,12 @@ function Home({ state, roast }: GameState): ReactElement {
           </section>
 
           <div className="flex">
-            <AvatarSlot mood={moodFor(state)} />
+            <Avatar
+              muscles={state.muscles}
+              mood={moodFor(state)}
+              startFrom={celebration?.before}
+              flexKey={celebration ? 1 : 0}
+            />
           </div>
 
           <section aria-label="Muscles">

@@ -100,8 +100,8 @@ export function AuthPoster({
     try {
       await startDemo.mutateAsync({});
       await navigate("/");
-    } catch {
-      fail({}, OFFLINE_MESSAGE);
+    } catch (err) {
+      fail({}, err instanceof ApiError ? err.message : OFFLINE_MESSAGE);
     }
   }
 
@@ -207,19 +207,28 @@ export function AuthPoster({
           </Link>
         </p>
 
-        {!me?.isDemo && (
-          <div className="flex flex-col gap-2 border-t-2 border-plate pt-5">
-            <button
-              type="button"
-              disabled={startDemo.isPending}
-              onClick={() => void handleStartDemo()}
-              className="cursor-pointer border-2 border-chalk px-5 py-2.5 font-display text-2xl font-black uppercase transition-colors hover:border-hazard hover:text-hazard disabled:cursor-wait"
+        <div className="flex flex-col gap-2 border-t-2 border-plate pt-5">
+          {me?.isDemo ? (
+            <Link
+              to="/"
+              className="border-2 border-chalk px-5 py-2.5 text-center font-display text-2xl font-black uppercase transition-colors hover:border-hazard hover:text-hazard"
             >
-              {startDemo.isPending ? "Starting demo…" : "Try the demo"}
-            </button>
-            <p className="text-center text-steel">No account needed. Sign up later to keep your data.</p>
-          </div>
-        )}
+              Back to my demo
+            </Link>
+          ) : (
+            <>
+              <button
+                type="button"
+                disabled={startDemo.isPending}
+                onClick={() => void handleStartDemo()}
+                className="cursor-pointer border-2 border-chalk px-5 py-2.5 font-display text-2xl font-black uppercase transition-colors hover:border-hazard hover:text-hazard disabled:cursor-wait"
+              >
+                {startDemo.isPending ? "Starting demo…" : "Try the demo"}
+              </button>
+              <p className="text-center text-steel">No account needed. Sign up later to keep your data.</p>
+            </>
+          )}
+        </div>
       </section>
     </main>
   );

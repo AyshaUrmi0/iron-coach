@@ -49,6 +49,8 @@ expect_cookie_flag SameSite=Lax
 check "same email again"              409 POST  /auth/register "{\"name\":\"Twin\",\"email\":\"$EMAIL\",\"password\":\"$PASSWORD\"}"
 check "read me"                       200 GET   /me
 check "update profile"                200 PATCH /me '{"name":"Smokey","bodyType":"female","weeklyGoal":5,"language":"en"}'
+check "pick a starting body"          200 PATCH /me '{"startBody":"heavy"}'
+check "unknown starting body"         400 PATCH /me '{"startBody":"giant"}'
 check "goal out of range"             400 PATCH /me '{"weeklyGoal":8}'
 check "unknown body type"             400 PATCH /me '{"bodyType":"alien"}'
 check "language not offered"          400 PATCH /me '{"language":"fr"}'
