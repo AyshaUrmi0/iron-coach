@@ -151,11 +151,10 @@ export function AuthPoster({
                   {type === "password" && (
                     <button
                       type="button"
-                      aria-pressed={showPassword}
                       onClick={() => setShowPassword((shown) => !shown)}
                       className="cursor-pointer font-semibold text-steel underline underline-offset-4 hover:text-hazard"
                     >
-                      Show password
+                      {showPassword ? "Hide password" : "Show password"}
                     </button>
                   )}
                 </div>
