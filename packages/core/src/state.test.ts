@@ -1,7 +1,7 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
 import { addDays, dateInTimezone, daysBetween } from "./dates.js";
-import { computeState, moodFor, titleFor, trainedGains, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
+import { computeState, moodFor, titleFor, trainedGains, weakestMuscle, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
 const d = (n: number): string => new Date(Date.UTC(2026, 0, 1 + n)).toISOString().slice(0, 10);
@@ -280,6 +280,16 @@ describe("trainedGains", () => {
   it("leaves out a muscle already at the cap", () => {
     const capped = scores("chest", 100, 50);
     expect(trainedGains(capped, capped, ["chest"])).toEqual([]);
+  });
+});
+
+describe("weakestMuscle", () => {
+  it("finds the lowest score", () => {
+    expect(weakestMuscle(scores("legs", 12, 40))).toBe("legs");
+  });
+
+  it("picks the first group on a tie", () => {
+    expect(weakestMuscle(scores("legs", 40, 40))).toBe("chest");
   });
 });
 

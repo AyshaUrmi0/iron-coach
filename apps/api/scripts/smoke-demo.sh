@@ -15,7 +15,7 @@ mongo() { docker exec iron-mongo mongosh --quiet iron-coach --eval "$1"; }
 
 cleanup() {
   for id in $CREATED_IDS; do
-    mongo "db.checkins.deleteMany({ userId: ObjectId('$id') }); db.users.deleteOne({ _id: ObjectId('$id') });" >/dev/null
+    mongo "db.checkins.deleteMany({ userId: ObjectId('$id') }); db.roasts.deleteOne({ userId: ObjectId('$id') }); db.users.deleteOne({ _id: ObjectId('$id') });" >/dev/null
     rm -rf "${UPLOADS:?}/$id"
   done
   rmdir "$UPLOADS" 2>/dev/null

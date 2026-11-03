@@ -16,7 +16,7 @@ day you skip, while the avatar slowly loses its gains.
 | Gym proof | Live selfie from the camera, not an upload |
 | Avatar | 3D, and each user picks a male or female body. A procedural body in v1, a proper model later |
 | Roast language | The user picks English, Banglish or Bangla |
-| Roast strength | Full volume for everyone, with hard limits on topics |
+| Roast strength | Full volume for everyone, aimed at laziness and excuses |
 | Users | Me and my friends; private accounts, no social features yet |
 | Coach | An original character, "Coach Iron", in the old-school hardcore gym style, not any real YouTuber |
 
@@ -70,12 +70,15 @@ The same energy in the other languages:
 - Banglish: "Bhai, gym er membership ki shudhu wallet e rakhar jonno kinchili? {days} din hoye gelo!"
 - Bangla: "আজও জিম মিস? তোর মাসলগুলো রাগ করে বাড়ি চলে গেছে।"
 
-**Hard limits, at every level and in every language:** no comments on weight, body shape or
-looks; no family insults; no slurs, and nothing about religion, gender, caste or appearance;
-nothing sexual, no threats, and no jokes about death or self-harm. Swearing is allowed.
+**On demand:** the home screen's "I'm procrastinating" button shows a fresh insult from a separate
+set of 20 lines, on any day the user hasn't checked in yet.
 
-**v1:** a roast bank in `roasts.ts`, about 6 lines per level per language, picked at random.
-**Later:** Gemini writes roasts from real data, under the same rules, with a filter and a fallback to the bank.
+**No word filter.** The lines are hand-written and stay on laziness and excuses, so the bank has no
+comments on weight, body shape or looks; no slurs, and nothing about religion, gender, caste or
+appearance; nothing sexual, no threats, and no jokes about death or self-harm. Swearing is allowed.
+
+**v1:** a roast bank in `roasts.ts`, 8 lines per level per language, picked at random.
+**AI roasts (off for now):** the code can ask Groq, then OpenRouter, but real replies included a violent threat and body insults in testing, and nothing filters them. It stays off unless `AI_ROASTS_ENABLED=true`, so the coach only uses the bank.
 
 ## Screens
 

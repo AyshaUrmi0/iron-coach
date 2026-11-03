@@ -10,6 +10,9 @@ const envSchema = z.object({
   NODE_ENV: z.string().optional(),
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
   CRON_SECRET: z.string().optional(),
+  AI_ROASTS_ENABLED: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);
