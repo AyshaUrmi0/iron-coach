@@ -2,13 +2,13 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type Query,
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import { ApiError, get, post, type User } from "./api";
+import { get, isLoggedOutError, patch, post, type User } from "./api";
 
-const HTTP_UNAUTHORIZED = 401;
-const ME_KEY = ["me"];
+export const ME_KEY = ["me"];
 
 export type AuthValues = Readonly<Record<string, string>>;
 
@@ -16,11 +16,16 @@ interface UserResponse {
   readonly user: User;
 }
 
+/** Everything cached for the current user, apart from the user itself. */
+function isUserData({ queryKey }: Query): boolean {
+  return queryKey[0] !== ME_KEY[0];
+}
+
 async function fetchMe(): Promise<User | null> {
   try {
     return (await get<UserResponse>("/me")).user;
   } catch (err) {
-    if (err instanceof ApiError && err.status === HTTP_UNAUTHORIZED) return null;
+    if (isLoggedOutError(err)) return null;
     throw err;
   }
 }
@@ -35,7 +40,21 @@ function useAuthMutation(path: string): UseMutationResult<UserResponse, Error, A
   return useMutation({
     mutationFn: (values: AuthValues) => post<UserResponse>(path, values),
     onSuccess: ({ user }) => {
+      // A demo visitor can log in to another account, so the old account's data must go.
+      queryClient.removeQueries({ predicate: isUserData });
       queryClient.setQueryData(ME_KEY, user);
+    },
+  });
+}
+
+export function useUpdateMe(): UseMutationResult<UserResponse, Error, Partial<User>> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (updates: Partial<User>) => patch<UserResponse>("/me", updates),
+    onSuccess: ({ user }) => {
+      queryClient.setQueryData(ME_KEY, user);
+      // A new weekly goal changes the skip days and the roast.
+      return queryClient.invalidateQueries({ predicate: isUserData });
     },
   });
 }
@@ -58,7 +77,7 @@ export function useLogout(): UseMutationResult<void, Error, void> {
     mutationFn: () => post<void>("/auth/logout"),
     onSuccess: () => {
       // Drops everything cached for this user, so the next person can't see it.
-      queryClient.removeQueries({ predicate: ({ queryKey }) => queryKey[0] !== ME_KEY[0] });
+      queryClient.removeQueries({ predicate: isUserData });
       queryClient.setQueryData(ME_KEY, null);
     },
   });

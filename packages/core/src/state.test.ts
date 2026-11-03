@@ -1,7 +1,7 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
 import { addDays, dateInTimezone, daysBetween } from "./dates.js";
-import { computeState, titleFor, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
+import { computeState, moodFor, titleFor, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
 const d = (n: number): string => new Date(Date.UTC(2026, 0, 1 + n)).toISOString().slice(0, 10);
@@ -242,6 +242,25 @@ describe("every weeklyGoal", () => {
 
   it.each([0, 1, 8, 2.5, Number.NaN])("rejects goal %s", (goal) => {
     expect(() => computeState([], goal, d(0))).toThrow(RangeError);
+  });
+});
+
+describe("moodFor", () => {
+  const state = computeState([], 3, d(0));
+
+  it.each([
+    [0, "normal"],
+    [2, "normal"],
+    [3, "slump"],
+    [4, "slump"],
+    [5, "nuclear"],
+    [8, "nuclear"],
+  ] as const)("%i skip days is %s", (skipDays, mood) => {
+    expect(moodFor({ ...state, skipDays, checkedInToday: false })).toBe(mood);
+  });
+
+  it("is hype after checking in today, whatever the skip days", () => {
+    expect(moodFor({ ...state, skipDays: 8, checkedInToday: true })).toBe("hype");
   });
 });
 

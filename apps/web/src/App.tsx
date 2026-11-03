@@ -1,11 +1,13 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
-import { OFFLINE_MESSAGE } from "./api";
 import { useMe } from "./auth";
+import { ConnectionError } from "./components/ConnectionError";
 import { DemoBanner } from "./components/DemoBanner";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
+import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { OnboardingPage } from "./pages/OnboardingPage";
 import { RegisterPage } from "./pages/RegisterPage";
 
 const WIPE_SECONDS = 0.22;
@@ -13,7 +15,6 @@ const WIPE_SECONDS = 0.22;
 const WIPE_EASE = [0.76, 0, 0.24, 1] as const;
 const WIPE_TRANSITION = { duration: WIPE_SECONDS, ease: WIPE_EASE };
 
-const ONBOARDING_STEP = 8;
 const CHECKIN_STEP = 9;
 const LATER_STEP = 10;
 
@@ -22,23 +23,6 @@ const WIPE_VARIANTS = {
   open: { scaleY: 0, originY: 0, transition: WIPE_TRANSITION },
   covering: { scaleY: [0, 1], originY: 1, transition: WIPE_TRANSITION },
 };
-
-function ConnectionError({ onRetry }: { readonly onRetry: () => void }): ReactElement {
-  return (
-    <main className="grid min-h-dvh place-content-center gap-5 p-6 text-center">
-      <p role="alert" className="text-lg">
-        {OFFLINE_MESSAGE}
-      </p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mx-auto cursor-pointer bg-iron-red px-5 py-3 font-display text-2xl font-black text-mat uppercase"
-      >
-        Try again
-      </button>
-    </main>
-  );
-}
 
 function ProtectedRoute(): ReactElement | null {
   const { pathname } = useLocation();
@@ -88,11 +72,8 @@ export default function App(): ReactElement {
             <Route path="/register" element={<RegisterPage />} />
           </Route>
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<ComingSoonPage title="Home" step={ONBOARDING_STEP} />} />
-            <Route
-              path="/onboarding"
-              element={<ComingSoonPage title="Onboarding" step={ONBOARDING_STEP} />}
-            />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/checkin" element={<ComingSoonPage title="Check in" step={CHECKIN_STEP} />} />
             <Route path="/history" element={<ComingSoonPage title="History" step={LATER_STEP} />} />
             <Route path="/settings" element={<ComingSoonPage title="Settings" step={LATER_STEP} />} />
