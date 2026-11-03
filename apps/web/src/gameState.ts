@@ -22,6 +22,13 @@ export interface CheckinCelebration {
   readonly trained: readonly MuscleGroup[];
 }
 
+export interface PastCheckin {
+  readonly id: string;
+  readonly date: string;
+  readonly muscles: readonly MuscleGroup[];
+  readonly hasPhoto: boolean;
+}
+
 interface NewCheckin {
   readonly selfie: Blob;
   readonly muscles: readonly MuscleGroup[];
@@ -31,6 +38,14 @@ export function useGameState(): UseQueryResult<GameState> {
   return useQuery({
     queryKey: STATE_KEY,
     queryFn: () => get<GameState>("/state"),
+  });
+}
+
+/** One "YYYY-MM" month of check-ins, for the history calendar. */
+export function useCheckins(month: string): UseQueryResult<readonly PastCheckin[]> {
+  return useQuery({
+    queryKey: ["checkins", month],
+    queryFn: async () => (await get<{ checkins: readonly PastCheckin[] }>(`/checkins?month=${month}`)).checkins,
   });
 }
 

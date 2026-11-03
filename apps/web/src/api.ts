@@ -17,6 +17,10 @@ export interface User {
   readonly isDemo: boolean;
 }
 
+export const BODY_TYPES: readonly User["bodyType"][] = ["male", "female"];
+// eslint-disable-next-line ts-patterns/no-magic-numbers -- the allowed weekly goals, from the rules in CLAUDE.md
+export const WEEKLY_GOALS: readonly number[] = [2, 3, 4, 5, 6, 7];
+
 export type FieldErrors = Readonly<Record<string, readonly string[] | undefined>>;
 
 export class ApiError extends Error {

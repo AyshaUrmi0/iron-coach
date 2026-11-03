@@ -3,9 +3,11 @@ import { useAnimate, useReducedMotion } from "motion/react";
 import { useEffect, useState, type ReactElement } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useMe } from "../auth";
+import { AppHeader } from "../components/AppHeader";
 import { Avatar } from "../components/Avatar";
 import { CoachBubble } from "../components/CoachBubble";
 import { ConnectionError } from "../components/ConnectionError";
+import { Flame } from "../components/Flame";
 import { GainBurst } from "../components/GainBurst";
 import { MuscleBars } from "../components/MuscleBars";
 import { useGameState, type CheckinCelebration, type GameState } from "../gameState";
@@ -33,14 +35,6 @@ function Stat({ label, value, icon }: {
       </p>
       <p className="font-semibold">{label}</p>
     </div>
-  );
-}
-
-function Flame(): ReactElement {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-12 fill-hazard">
-      <path d="M12 2c1 4-4 6-4 11a4 4 0 0 0 1 3c-2-1-3-3-3-5-2 2-3 4-3 6a9 9 0 0 0 18 0c0-6-5-9-9-15Z" />
-    </svg>
   );
 }
 
@@ -95,17 +89,7 @@ function Home({ state, roast }: GameState): ReactElement {
         ref={screen}
         className="relative mx-auto flex min-h-dvh max-w-6xl flex-col gap-5 p-4 sm:p-6"
       >
-        <header className="flex items-center justify-between gap-4">
-          <p className="font-display text-3xl font-black uppercase">Iron Coach</p>
-          <nav aria-label="Main" className="flex items-center gap-5 font-semibold">
-            <Link to="/history" className="py-2.5 underline-offset-4 hover:underline">
-              History
-            </Link>
-            <Link to="/settings" className="py-2.5 underline-offset-4 hover:underline">
-              Settings
-            </Link>
-          </nav>
-        </header>
+        <AppHeader />
 
         {/* Stays mounted while the bubble is replaced, so screen readers hear each new insult. */}
         <div aria-live="polite">
@@ -128,7 +112,7 @@ function Home({ state, roast }: GameState): ReactElement {
               {state.title}
             </h1>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-              <Stat label="Day streak" value={state.streak} icon={<Flame />} />
+              <Stat label="Day streak" value={state.streak} icon={<Flame className="size-12" />} />
               <Stat label="Skip days" value={state.skipDays} />
             </div>
           </section>

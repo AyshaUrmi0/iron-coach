@@ -88,8 +88,8 @@ appearance; nothing sexual, no threats, and no jokes about death or self-harm. S
 | Onboarding (4 steps) | 1. Pick a male or female body (two rotating 3D previews). 2. Weekly goal chips (2–7). 3. Roast language. 4. Meet Coach Iron |
 | Home | The avatar in the centre (idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, and a huge CHECK IN button |
 | Check-in | A full-screen live camera, then snap (with retake), pick muscles and submit. Then the avatar flexes, its body grows, "+6 CHEST" numbers fly up, and the coach hypes you |
-| History | A month calendar with a dot per gym day; tap a day to see that selfie and what was trained |
-| Settings | Change body type, goal or roast language; log out |
+| History | A month calendar with a flame on each gym day; tap a day to see that selfie and what was trained |
+| Settings | Change name, body type, starting shape or goal; log out. Roast language returns when there's more than English |
 
 **Look and feel:** dark, loud and over the top, like a hardcore gym poster. When you're behind, the
 home screen gets visibly worse: it turns redder, the avatar darkens and slumps and the coach bubble shakes.

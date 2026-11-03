@@ -92,6 +92,8 @@ check "user B's calendar is separate" 200 '"checkins":[]'       "$B" "$API/check
 check "owner fetches selfie"          200 ""                    "$A" "$API/selfies/$CHECKIN"
 assert "selfie bytes match" cmp -s "$PNG" "$WORK/body"
 assert "selfie is image/png" grep -qi '^content-type: image/png' "$WORK/headers"
+check "real selfie is marked as a photo" 200 '"hasPhoto":true' "$A" "$API/checkins?month=$(TZ=Asia/Dhaka date +%Y-%m)"
+check "selfie still fetches"            200 ""                "$A" "$API/selfies/$CHECKIN"
 assert "selfie is not cached" grep -qi '^cache-control: private, no-store' "$WORK/headers"
 check "other user gets 404"           404 "Selfie not found"    "$B" "$API/selfies/$CHECKIN"
 check "logged out gets 401"           401 ""                    "$NOBODY" "$API/selfies/$CHECKIN"
@@ -107,9 +109,11 @@ check "today=Mar 1, checked in"       200 '"roastLevel":"hype"'    "$A" "$API/st
 check "today=Mar 4, allowed rest"     200 '"roastLevel":"rest"'    "$A" "$API/state?today=2026-03-04"
 check "today=Mar 5, 1 skip day"       200 '"roastLevel":"annoyed"' "$A" "$API/state?today=2026-03-05"
 check "today=Mar 6, 2 skip days"      200 '"roastLevel":"angry"'   "$A" "$API/state?today=2026-03-06"
+assert "2 skip days costs 4 points" grep -qF '"chest":22,"back":17' "$WORK/body"
 check "today=Mar 8, 4 skip days"      200 '"chest":18,"back":13'   "$A" "$API/state?today=2026-03-08"
 assert "4 skip days is savage" grep -qF '"roastLevel":"savage"' "$WORK/body"
 check "today=Mar 12, 8 skip days"     200 '"roastLevel":"nuclear"' "$A" "$API/state?today=2026-03-12"
+assert "8 skip days stops at the floor" grep -qF '"chest":10,"back":10' "$WORK/body"
 check "today before any check-in"     200 '"chest":20'             "$A" "$API/state?today=2026-02-01"
 check "bad fake date"                 400 "today"                  "$A" "$API/state?today=soon"
 
@@ -119,6 +123,13 @@ check "first check-in after skipping" 200 '"roastLevel":"comeback"' "$A" "$API/s
 check "seeded calendar"               200 '"date":"2026-03-08"' "$A" "$API/checkins?month=2026-03"
 SEEDED="$(json_id)"
 check "seeded selfie fetches"         200 ""                    "$A" "$API/selfies/$SEEDED"
+check "seeded check-in has no photo"  200 '"hasPhoto":false'    "$A" "$API/checkins?month=2026-03"
+
+WEEK='{"dates":["2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07"],"muscles":["chest"],"reset":true}'
+check "seed a perfect week"           201 '"created":7'         "$A" -H "$JSON" -d "$WEEK" "$API/dev/seed"
+check "perfect week scores"           200 '"chest":65,"back":30' "$A" "$API/state?today=2026-04-07"
+assert "perfect week streak" grep -qF '"streak":7' "$WORK/body"
+assert "perfect week hypes" grep -qF '"roastLevel":"hype"' "$WORK/body"
 
 echo
 if [ "$FAILS" -eq 0 ]; then echo "All checks passed."; else echo "$FAILS check(s) failed."; exit 1; fi

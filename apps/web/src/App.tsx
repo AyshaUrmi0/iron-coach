@@ -1,23 +1,22 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import type { ReactElement } from "react";
+import { useMemo, type ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { useMe } from "./auth";
 import { ConnectionError } from "./components/ConnectionError";
 import { DemoBanner } from "./components/DemoBanner";
 import { AvatarLabPage } from "./pages/AvatarLabPage";
 import { CheckinPage } from "./pages/CheckinPage";
-import { ComingSoonPage } from "./pages/ComingSoonPage";
+import { HistoryPage } from "./pages/HistoryPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { RegisterPage } from "./pages/RegisterPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 const WIPE_SECONDS = 0.22;
 // eslint-disable-next-line ts-patterns/no-magic-numbers -- the four points of a cubic-bezier curve
 const WIPE_EASE = [0.76, 0, 0.24, 1] as const;
 const WIPE_TRANSITION = { duration: WIPE_SECONDS, ease: WIPE_EASE };
-
-const LATER_STEP = 10;
 
 const WIPE_VARIANTS = {
   covered: { scaleY: 1, originY: 0 },
@@ -28,10 +27,12 @@ const WIPE_VARIANTS = {
 function ProtectedRoute(): ReactElement | null {
   const { pathname } = useLocation();
   const { data: user, isPending, isError, refetch } = useMe();
+  // Kept stable: Navigate redirects again whenever this object is new, and the wipe keeps it on screen for a moment.
+  const redirectState = useMemo(() => ({ from: pathname }), [pathname]);
 
   if (isPending) return null;
   if (isError) return <ConnectionError onRetry={() => void refetch()} />;
-  if (!user) return <Navigate to="/login" replace state={{ from: pathname }} />;
+  if (!user) return <Navigate to="/login" replace state={redirectState} />;
   return (
     <>
       {user.isDemo && <DemoBanner />}
@@ -76,8 +77,8 @@ export default function App(): ReactElement {
             <Route path="/" element={<HomePage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/checkin" element={<CheckinPage />} />
-            <Route path="/history" element={<ComingSoonPage title="History" step={LATER_STEP} />} />
-            <Route path="/settings" element={<ComingSoonPage title="Settings" step={LATER_STEP} />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
           {import.meta.env.DEV && <Route path="/avatar-lab" element={<AvatarLabPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />

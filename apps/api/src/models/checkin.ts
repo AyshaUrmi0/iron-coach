@@ -1,6 +1,7 @@
 import { MUSCLE_GROUPS, type MuscleGroup } from "@iron-coach/core";
 import { model, Schema, type HydratedDocument, type Types } from "mongoose";
 import { z } from "zod";
+import { PLACEHOLDER_SELFIE_PATH } from "../selfies.js";
 
 export const musclesSchema = z
   .array(z.enum(MUSCLE_GROUPS))
@@ -35,6 +36,7 @@ export interface PublicCheckin {
   readonly date: string;
   readonly takenAt: Date;
   readonly muscles: readonly MuscleGroup[];
+  readonly hasPhoto: boolean;
 }
 
 /** The only check-in fields that may leave the API. Never includes selfiePath. */
@@ -44,5 +46,6 @@ export function toPublicCheckin(checkin: HydratedDocument<CheckinFields>): Publi
     date: checkin.date,
     takenAt: checkin.takenAt,
     muscles: checkin.muscles,
+    hasPhoto: checkin.selfiePath !== PLACEHOLDER_SELFIE_PATH,
   };
 }
