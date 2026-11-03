@@ -7,7 +7,7 @@ export const musclesSchema = z
   .min(1)
   .transform((muscles) => [...new Set(muscles)]);
 
-interface CheckinFields {
+export interface CheckinFields {
   userId: Types.ObjectId;
   date: string;
   takenAt: Date;

@@ -1,10 +1,14 @@
+import type { Language } from "@iron-coach/core";
+
+export const OFFLINE_MESSAGE = "Can't reach Iron Coach. Check your connection and try again.";
+
 export interface User {
   readonly id: string;
   readonly name: string;
   readonly email: string;
   readonly bodyType: "male" | "female";
   readonly weeklyGoal: number;
-  readonly language: "en";
+  readonly language: Language;
   readonly timezone: string;
   readonly isDemo: boolean;
 }

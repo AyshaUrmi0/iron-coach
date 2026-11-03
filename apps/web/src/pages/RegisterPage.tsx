@@ -1,9 +1,8 @@
+import { MIN_PASSWORD_LENGTH } from "@iron-coach/core";
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router";
 import { useMe, useRegister, type AuthValues } from "../auth";
 import { AuthPoster, type AuthField } from "../components/AuthPoster";
-
-const MIN_PASSWORD_LENGTH = 8;
 
 const FIELDS: readonly AuthField[] = [
   {

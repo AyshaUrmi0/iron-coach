@@ -1,21 +1,20 @@
+import { MIN_PASSWORD_LENGTH } from "@iron-coach/core";
 import bcrypt from "bcrypt";
-import { Router } from "express";
+import { Router, type Response } from "express";
 import { z } from "zod";
 import { clearAuthCookie, currentDemoUser, setAuthCookie } from "../auth.js";
-import { createDemoUser, upgradeDemoUser } from "../demo.js";
+import { createDemoUser, upgradeDemoUser, type NewAccount } from "../demo.js";
 import {
-  HTTP_CONFLICT,
+  conflictOnDuplicate,
   HTTP_CREATED,
   HTTP_NO_CONTENT,
   HTTP_UNAUTHORIZED,
   HttpError,
-  isDuplicateKeyError,
 } from "../http.js";
 import { nameSchema, toPublicUser, User, type UserDoc } from "../models/user.js";
 import { rateLimit } from "../rateLimit.js";
 
 const BCRYPT_ROUNDS = 12;
-const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_BYTES = 72;
 const ONE_HOUR_MS = 3_600_000;
 const FIFTEEN_MINUTES_MS = 900_000;
@@ -42,18 +41,14 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-async function createAccount(
-  demoUser: UserDoc | undefined,
-  account: { readonly name: string; readonly email: string; readonly passwordHash: string },
-): Promise<UserDoc> {
-  try {
-    return await (demoUser ? upgradeDemoUser(demoUser, account) : User.create(account));
-  } catch (err) {
-    if (isDuplicateKeyError(err)) {
-      throw new HttpError(HTTP_CONFLICT, "That email is already registered.");
-    }
-    throw err;
-  }
+async function createAccount(demoUser: UserDoc | undefined, account: NewAccount): Promise<UserDoc> {
+  const saving: Promise<UserDoc> = demoUser ? upgradeDemoUser(demoUser, account) : User.create(account);
+  return saving.catch(conflictOnDuplicate("That email is already registered."));
+}
+
+function startSession(res: Response, user: UserDoc): void {
+  setAuthCookie(res, user._id.toString());
+  res.json({ user: toPublicUser(user) });
 }
 
 export const authRouter = Router();
@@ -66,8 +61,7 @@ authRouter.post(
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     // Signing up from a demo keeps what the visitor did there.
     const user = await createAccount(await currentDemoUser(req), { name, email, passwordHash });
-    setAuthCookie(res, user._id.toString());
-    res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
+    startSession(res.status(HTTP_CREATED), user);
   },
 );
 
@@ -75,9 +69,7 @@ authRouter.post(
   "/demo",
   rateLimit({ name: "demo", limit: MAX_DEMOS, windowMs: ONE_HOUR_MS }),
   async (_req, res) => {
-    const user = await createDemoUser();
-    setAuthCookie(res, user._id.toString());
-    res.status(HTTP_CREATED).json({ user: toPublicUser(user) });
+    startSession(res.status(HTTP_CREATED), await createDemoUser());
   },
 );
 
@@ -90,8 +82,7 @@ authRouter.post(
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new HttpError(HTTP_UNAUTHORIZED, "Wrong email or password.");
     }
-    setAuthCookie(res, user._id.toString());
-    res.json({ user: toPublicUser(user) });
+    startSession(res, user);
   },
 );
 

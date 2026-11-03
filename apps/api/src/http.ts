@@ -8,7 +8,7 @@ export const HTTP_NO_CONTENT = 204;
 export const HTTP_BAD_REQUEST = 400;
 export const HTTP_UNAUTHORIZED = 401;
 export const HTTP_NOT_FOUND = 404;
-export const HTTP_CONFLICT = 409;
+const HTTP_CONFLICT = 409;
 export const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_SERVER_ERROR = 500;
 const MONGO_DUPLICATE_KEY = 11_000;
@@ -27,6 +27,14 @@ export class HttpError extends Error {
   ) {
     super(message);
   }
+}
+
+/** For `.catch()` on a database write: a unique-index clash becomes a 409 with this message. */
+export function conflictOnDuplicate(message: string): (err: unknown) => never {
+  return (err) => {
+    if (isDuplicateKeyError(err)) throw new HttpError(HTTP_CONFLICT, message);
+    throw err;
+  };
 }
 
 // express.json() throws errors of this same shape for bad or oversized bodies.

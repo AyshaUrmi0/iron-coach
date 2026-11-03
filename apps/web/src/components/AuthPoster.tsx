@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useId, useState, type FormEvent, type ReactElement } from "react";
 import { Link, useNavigate } from "react-router";
-import { ApiError } from "../api";
+import { ApiError, OFFLINE_MESSAGE } from "../api";
 import { useMe, useStartDemo, type AuthValues } from "../auth";
 import { Barbell } from "./Barbell";
 
@@ -11,7 +11,6 @@ const SLAM_STIFFNESS = 520;
 const SLAM_DAMPING = 30;
 const SLAM = { type: "spring", stiffness: SLAM_STIFFNESS, damping: SLAM_DAMPING } as const;
 const BUTTON_PRESS_DEPTH = 3;
-const OFFLINE_MESSAGE = "Can't reach Iron Coach. Check your connection and try again.";
 
 export interface AuthField {
   readonly name: string;

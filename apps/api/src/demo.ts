@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { addDays, dateInTimezone, type MuscleGroup } from "@iron-coach/core";
-import { Checkin } from "./models/checkin.js";
+import type { Types } from "mongoose";
+import { SESSION_MS } from "./auth.js";
+import { Checkin, type CheckinFields } from "./models/checkin.js";
 import { User, type UserDoc } from "./models/user.js";
 import { PLACEHOLDER_SELFIE_PATH } from "./selfies.js";
 
 const DEMO_NAME = "Rookie";
-const DEMO_LIFETIME_MS = 604_800_000; // 7 days, the same as a login session
 // Not a bcrypt hash, so no password can ever match it and demo accounts can't be logged in to.
 const NO_PASSWORD = "!demo-account-has-no-password";
 
@@ -20,6 +21,27 @@ const SAMPLE_CHECKINS: readonly { readonly daysAgo: number; readonly muscles: Mu
 ];
 /* eslint-enable ts-patterns/no-magic-numbers */
 
+export interface NewAccount {
+  readonly name: string;
+  readonly email: string;
+  readonly passwordHash: string;
+}
+
+/** A check-in with no real photo, for demo history and dev seed data. */
+export function placeholderCheckin(
+  userId: Types.ObjectId,
+  date: string,
+  muscles: MuscleGroup[],
+): CheckinFields {
+  return {
+    userId,
+    date,
+    takenAt: new Date(`${date}T12:00:00Z`),
+    muscles,
+    selfiePath: PLACEHOLDER_SELFIE_PATH,
+  };
+}
+
 /** Each visitor gets their own account, so nobody sees anyone else's demo data. */
 export async function createDemoUser(): Promise<UserDoc> {
   const user = await User.create({
@@ -27,21 +49,15 @@ export async function createDemoUser(): Promise<UserDoc> {
     email: `${randomUUID()}@demo.invalid`,
     passwordHash: NO_PASSWORD,
     isDemo: true,
-    demoExpiresAt: new Date(Date.now() + DEMO_LIFETIME_MS),
+    // A demo lasts as long as its login session.
+    demoExpiresAt: new Date(Date.now() + SESSION_MS),
   });
   const today = dateInTimezone(new Date(), user.timezone);
   await Checkin.insertMany(
-    SAMPLE_CHECKINS.map(({ daysAgo, muscles }) => {
-      const date = addDays(today, -daysAgo);
-      return {
-        userId: user._id,
-        date,
-        takenAt: new Date(`${date}T12:00:00Z`),
-        muscles,
-        selfiePath: PLACEHOLDER_SELFIE_PATH,
-        isSample: true,
-      };
-    }),
+    SAMPLE_CHECKINS.map(({ daysAgo, muscles }) => ({
+      ...placeholderCheckin(user._id, addDays(today, -daysAgo), muscles),
+      isSample: true,
+    })),
   );
   return user;
 }
@@ -49,7 +65,7 @@ export async function createDemoUser(): Promise<UserDoc> {
 /** Turns a demo account into a real one. The visitor's own check-ins stay, the samples go. */
 export async function upgradeDemoUser(
   user: UserDoc,
-  account: { readonly name: string; readonly email: string; readonly passwordHash: string },
+  account: NewAccount,
 ): Promise<UserDoc> {
   user.set({ ...account, isDemo: false, demoExpiresAt: undefined });
   await user.save();
