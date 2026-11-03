@@ -31,12 +31,19 @@ MongoDB: mongodb://localhost:27017/iron-coach. Timezone for "today": Asia/Dhaka.
 Loud and swears (damn, hell, ass, bullshit and "lazy ass" are fine), at full volume for everyone.
 He roasts EFFORT and EXCUSES only. Never: weight, body or looks; family insults (no maa-bon
 galagali); slurs; religion, gender or caste; sexual content; threats; death or self-harm jokes.
-Languages: en, banglish, bn (the user picks). Templates use {name}, {days}, {muscle}.
+Languages: en only for now (banglish and bn later). Templates use {name}, {days}, {muscle}.
 
 ## Data
-User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, language, timezone }
-Check-in: { userId, date "YYYY-MM-DD" (unique per user), takenAt, muscles[], selfiePath }
+User: { name, email, passwordHash, bodyType: "male"|"female", weeklyGoal, language, timezone,
+isDemo, demoExpiresAt }
+Check-in: { userId, date "YYYY-MM-DD" (unique per user), takenAt, muscles[], selfiePath, isSample }
 Selfies are private: only the owner can fetch them. Camera capture only, no file picker.
+Stored in private Vercel Blob when deployed (BLOB_READ_WRITE_TOKEN set), on local disk otherwise.
+
+## Demo mode
+Anyone can explore without an account. Each visitor gets their own temporary account, never a
+shared one, deleted after 7 days. It starts with sample check-ins. Demo photos are never stored.
+Signing up from a demo keeps the same account and the visitor's own check-ins; samples are removed.
 
 ## Style
 A dark hardcore-gym look: near-black background, bold condensed headings, one loud accent
