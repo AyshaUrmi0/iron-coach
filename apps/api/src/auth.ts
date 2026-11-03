@@ -15,8 +15,8 @@ declare global {
 const COOKIE_NAME = "token";
 const COOKIE_PREFIX = `${COOKIE_NAME}=`;
 const JWT_ALGORITHM = "HS256";
-const SESSION_SECONDS = 604_800; // 7 days
-const SESSION_MS = 604_800_000; // 7 days
+const MS_PER_SECOND = 1000;
+export const SESSION_MS = 604_800_000; // 7 days
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -29,7 +29,7 @@ export function setAuthCookie(res: Response, userId: string): void {
   const token = jwt.sign({}, env.JWT_SECRET, {
     subject: userId,
     algorithm: JWT_ALGORITHM,
-    expiresIn: SESSION_SECONDS,
+    expiresIn: SESSION_MS / MS_PER_SECOND,
   });
   res.cookie(COOKIE_NAME, token, { ...COOKIE_OPTIONS, maxAge: SESSION_MS });
 }

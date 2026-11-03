@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import type { ReactElement } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
+import { OFFLINE_MESSAGE } from "./api";
 import { useMe } from "./auth";
 import { DemoBanner } from "./components/DemoBanner";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
@@ -26,7 +27,7 @@ function ConnectionError({ onRetry }: { readonly onRetry: () => void }): ReactEl
   return (
     <main className="grid min-h-dvh place-content-center gap-5 p-6 text-center">
       <p role="alert" className="text-lg">
-        Can't reach Iron Coach. Check your connection and try again.
+        {OFFLINE_MESSAGE}
       </p>
       <button
         type="button"

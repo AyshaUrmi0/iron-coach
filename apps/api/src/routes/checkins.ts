@@ -3,13 +3,7 @@ import { Router } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { currentUser, requireAuth } from "../auth.js";
-import {
-  HTTP_BAD_REQUEST,
-  HTTP_CONFLICT,
-  HTTP_CREATED,
-  HttpError,
-  isDuplicateKeyError,
-} from "../http.js";
+import { conflictOnDuplicate, HTTP_BAD_REQUEST, HTTP_CREATED, HttpError } from "../http.js";
 import { Checkin, musclesSchema, toPublicCheckin } from "../models/checkin.js";
 import {
   newSelfiePath,
@@ -60,10 +54,7 @@ checkinsRouter.post("/", upload.single("selfie"), async (req, res) => {
     takenAt,
     muscles,
     selfiePath,
-  }).catch((err: unknown) => {
-    if (isDuplicateKeyError(err)) throw new HttpError(HTTP_CONFLICT, "Already checked in today.");
-    throw err;
-  });
+  }).catch(conflictOnDuplicate("Already checked in today."));
 
   if (!user.isDemo) {
     try {
