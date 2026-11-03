@@ -33,3 +33,6 @@ app.use("/api", () => {
   throw new HttpError(HTTP_NOT_FOUND, "Not found.");
 });
 app.use(errorHandler);
+
+// Vercel loads this file and runs its default export. Local development starts from local.ts.
+export default app;
