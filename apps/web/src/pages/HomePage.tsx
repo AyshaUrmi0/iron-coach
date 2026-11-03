@@ -1,12 +1,13 @@
-import { moodFor, type RoastLevel, type State } from "@iron-coach/core";
+import { moodFor, trainedGains, type RoastLevel, type State } from "@iron-coach/core";
 import { useAnimate, useReducedMotion } from "motion/react";
-import { useEffect, type ReactElement } from "react";
-import { Link } from "react-router";
+import { useEffect, useState, type ReactElement } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
 import { AvatarSlot } from "../components/AvatarSlot";
 import { CoachBubble } from "../components/CoachBubble";
 import { ConnectionError } from "../components/ConnectionError";
+import { GainBurst } from "../components/GainBurst";
 import { MuscleBars } from "../components/MuscleBars";
-import { useGameState, type GameState } from "../gameState";
+import { useGameState, type CheckinCelebration, type GameState } from "../gameState";
 
 // The screen is at its reddest and darkest from this many skip days, when the coach goes nuclear.
 const WORST_SKIP_DAYS = 5;
@@ -58,6 +59,16 @@ function CheckInButton({ state }: { readonly state: State }): ReactElement {
 function Home({ state, roast }: GameState): ReactElement {
   const [screen, animate] = useAnimate<HTMLDivElement>();
   const reduceMotion = useReducedMotion();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [celebration] = useState(
+    () => (location.state as { readonly celebration?: CheckinCelebration } | null)?.celebration,
+  );
+
+  // Cleared straight away, so a page reload doesn't celebrate the same check-in again.
+  useEffect(() => {
+    if (celebration) void navigate(".", { replace: true, state: null });
+  }, [celebration, navigate]);
 
   // Started by hand because App's AnimatePresence blocks a motion element's first animation on page load.
   useEffect(() => {
@@ -111,12 +122,16 @@ function Home({ state, roast }: GameState): ReactElement {
           </div>
 
           <section aria-label="Muscles">
-            <MuscleBars muscles={state.muscles} />
+            <MuscleBars muscles={state.muscles} startFrom={celebration?.before} />
           </section>
         </div>
 
         <CheckInButton state={state} />
       </div>
+
+      {celebration && (
+        <GainBurst gains={trainedGains(celebration.before, state.muscles, celebration.trained)} />
+      )}
     </main>
   );
 }

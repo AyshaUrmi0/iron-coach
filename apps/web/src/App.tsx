@@ -4,6 +4,7 @@ import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { useMe } from "./auth";
 import { ConnectionError } from "./components/ConnectionError";
 import { DemoBanner } from "./components/DemoBanner";
+import { CheckinPage } from "./pages/CheckinPage";
 import { ComingSoonPage } from "./pages/ComingSoonPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -15,7 +16,6 @@ const WIPE_SECONDS = 0.22;
 const WIPE_EASE = [0.76, 0, 0.24, 1] as const;
 const WIPE_TRANSITION = { duration: WIPE_SECONDS, ease: WIPE_EASE };
 
-const CHECKIN_STEP = 9;
 const LATER_STEP = 10;
 
 const WIPE_VARIANTS = {
@@ -74,7 +74,7 @@ export default function App(): ReactElement {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/checkin" element={<ComingSoonPage title="Check in" step={CHECKIN_STEP} />} />
+            <Route path="/checkin" element={<CheckinPage />} />
             <Route path="/history" element={<ComingSoonPage title="History" step={LATER_STEP} />} />
             <Route path="/settings" element={<ComingSoonPage title="Settings" step={LATER_STEP} />} />
           </Route>

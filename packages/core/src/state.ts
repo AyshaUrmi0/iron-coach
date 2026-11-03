@@ -107,6 +107,22 @@ function gain(score: number, amount: number): number {
   return Math.min(MAX_SCORE, score + amount);
 }
 
+export interface MuscleGain {
+  readonly muscle: MuscleGroup;
+  readonly gain: number;
+}
+
+/** What each trained muscle really gained. A muscle already at the cap gained nothing, so it's left out. */
+export function trainedGains(
+  before: Muscles,
+  after: Muscles,
+  trained: readonly MuscleGroup[],
+): readonly MuscleGain[] {
+  return trained
+    .map((muscle) => ({ muscle, gain: after[muscle] - before[muscle] }))
+    .filter(({ gain }) => gain > 0);
+}
+
 export function moodFor({ checkedInToday, skipDays }: State): AvatarMood {
   if (checkedInToday) return "hype";
   if (skipDays >= NUCLEAR_MIN_SKIPS) return "nuclear";

@@ -1,7 +1,7 @@
 /* eslint-disable ts-patterns/no-magic-numbers -- hand-worked expected scores read best as plain numbers */
 import { describe, expect, it } from "vitest";
 import { addDays, dateInTimezone, daysBetween } from "./dates.js";
-import { computeState, moodFor, titleFor, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
+import { computeState, moodFor, titleFor, trainedGains, type Checkin, type MuscleGroup, type Muscles } from "./state.js";
 
 /** Date string n days after 2026-01-01. */
 const d = (n: number): string => new Date(Date.UTC(2026, 0, 1 + n)).toISOString().slice(0, 10);
@@ -261,6 +261,25 @@ describe("moodFor", () => {
 
   it("is hype after checking in today, whatever the skip days", () => {
     expect(moodFor({ ...state, skipDays: 8, checkedInToday: true })).toBe("hype");
+  });
+});
+
+describe("trainedGains", () => {
+  it("reports the real gain of a check-in on trained muscles only", () => {
+    const before = computeState(checkins(1, 1), 7, d(0)).muscles;
+    const after = computeState(checkins(2, 1), 7, d(1)).muscles;
+    expect(trainedGains(before, after, ["chest"])).toEqual([{ muscle: "chest", gain: 6 }]);
+  });
+
+  it("includes the streak bonus", () => {
+    const before = computeState(checkins(6, 1), 7, d(5)).muscles;
+    const after = computeState(checkins(7, 1), 7, d(6)).muscles;
+    expect(trainedGains(before, after, ["chest"])).toEqual([{ muscle: "chest", gain: 9 }]);
+  });
+
+  it("leaves out a muscle already at the cap", () => {
+    const capped = scores("chest", 100, 50);
+    expect(trainedGains(capped, capped, ["chest"])).toEqual([]);
   });
 });
 
