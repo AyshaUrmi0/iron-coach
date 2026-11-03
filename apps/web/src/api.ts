@@ -3,6 +3,7 @@ import type { Language } from "@iron-coach/core";
 export const OFFLINE_MESSAGE = "Can't reach Iron Coach. Check your connection and try again.";
 
 const HTTP_UNAUTHORIZED = 401;
+const HTTP_CONFLICT = 409;
 
 export interface User {
   readonly id: string;
@@ -36,6 +37,10 @@ export function isLoggedOutError(error: unknown): boolean {
   return error instanceof ApiError && error.status === HTTP_UNAUTHORIZED;
 }
 
+export function isConflictError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === HTTP_CONFLICT;
+}
+
 /** Non-JSON replies happen when a proxy answers because the API itself is down. */
 function parseBody(text: string): unknown {
   try {
@@ -65,6 +70,10 @@ export function patch<T>(path: string, data: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+}
+
+export function postForm<T>(path: string, form: FormData): Promise<T> {
+  return request<T>(path, { method: "POST", body: form });
 }
 
 export function post<T>(path: string, data?: unknown): Promise<T> {
