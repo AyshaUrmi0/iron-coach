@@ -85,11 +85,14 @@ appearance; nothing sexual, no threats, and no jokes about death or self-harm. S
 | Screen | What's on it |
 | --- | --- |
 | Sign up / log in | Name, email, password. A dark gym look with one loud accent colour |
-| Onboarding (4 steps) | 1. Pick a male or female body (two rotating 3D previews). 2. Weekly goal chips (2–7). 3. Roast language. 4. Meet Coach Iron |
-| Home | The avatar in the centre (idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, and a huge CHECK IN button |
+| Onboarding (4 steps) | 1. Pick a male or female body. 2. Starting shape. 3. Weekly goal chips (2–7). 4. Meet Coach Iron |
+| Home | The avatar in the centre (idle breathing). A coach speech bubble typing out today's roast, which shakes on savage and nuclear. Streak flame, skip-day counter, title badge, six muscle bars, today's protein bar, and a huge CHECK IN button |
 | Check-in | A full-screen live camera, then snap (with retake), pick muscles and submit. Then the avatar flexes, its body grows, "+6 CHEST" numbers fly up, and the coach hypes you |
-| History | A month calendar with a flame on each gym day; tap a day to see that selfie and what was trained |
-| Settings | Change name, body type, starting shape or goal; log out. Roast language returns when there's more than English |
+| Meals | Log a meal with its protein in whole grams, or tap a saved food. Today's bar against the goal, today's meals, and delete |
+| History | A month calendar with a flame on each gym day and the protein total on each day with meals; tap a day to see its selfie, what was trained and what was eaten |
+| Settings | Change name, body type, starting shape, weekly goal or protein goal; log out. Roast language returns when there's more than English |
+
+**Protein:** meals only track protein, against a goal the user sets (100 g by default). They never affect the muscle scores or the avatar. From 6pm the coach gets on your case if you're short, and hypes you once the goal is hit.
 
 **Look and feel:** dark, loud and over the top, like a hardcore gym poster. When you're behind, the
 home screen gets visibly worse: it turns redder, the avatar darkens and slumps and the coach bubble shakes.
@@ -119,9 +122,13 @@ The body follows the average of the six muscle scores (`avatarFrame` in `package
 | Method | Path | Does |
 | --- | --- | --- |
 | POST | /api/auth/register, /api/auth/login, /api/auth/logout | Account and session |
-| GET / PATCH | /api/me | Read or change name, body type, goal, language |
+| GET / PATCH | /api/me | Read or change name, body type, starting shape, weekly goal, protein goal, language |
 | POST | /api/checkins | Upload selfie + muscles. A second check-in on the same day gets a 409 |
 | GET | /api/checkins?month=YYYY-MM | Check-ins for the calendar |
+| GET | /api/meals?month=YYYY-MM | Meals for the calendar and today's total |
+| GET | /api/meals/foods | Saved foods: everything logged before, newest first, with its latest protein |
+| POST | /api/meals | Log a meal for today. Limited to 30 a day |
+| DELETE | /api/meals/:id | Delete one of your own meals |
 | GET | /api/state | Muscles, streak, skip days, title, roast level and today's roast |
 | GET | /api/selfies/:id | Returns the selfie to its owner only |
 

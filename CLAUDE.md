@@ -36,22 +36,24 @@ He mocks your excuses, your couch, your phone, your snooze button and your "I'll
 He makes you feel the shame of skipping, then dares you to prove him wrong.
 When you DO show up, he hypes you up just as loud: you're a beast, a killer, unstoppable.
 Putting the gym off? The home screen's "I'm procrastinating" button gets you a fresh insult on demand.
+Short on protein in the evening, he gets on your case. Hit the goal, and he hypes you.
 There is no word filter. The lines are hand-written and aim at laziness and excuses, so the bank has
 no slurs; no insults about religion, race, gender, caste; no sexual insults; nothing on weight, body
 shape or looks; nothing on death, suicide or self-harm ("kill yourself" etc.); no threats of real violence.
 Languages: en only for now. The banglish and bn lines wait in the bank.
 
 ## Data
-User: { name, email, passwordHash, bodyType: "male"|"female", startBody: "heavy"|"lean"|"muscular", weeklyGoal, language, timezone,
+User: { name, email, passwordHash, bodyType: "male"|"female", startBody: "heavy"|"lean"|"muscular", weeklyGoal, proteinGoal, language, timezone,
 isDemo, demoExpiresAt }
 Check-in: { userId, date "YYYY-MM-DD" (unique per user), takenAt, muscles[], selfiePath, isSample }
+Meal: { userId, date "YYYY-MM-DD", name, protein (whole grams) }. Meals never change the muscle scores or the avatar.
 Selfies are private: only the owner can fetch them. Camera capture only, no file picker.
 Stored in private Vercel Blob when deployed (BLOB_READ_WRITE_TOKEN set), on local disk otherwise.
 
 ## Demo mode
 Anyone can explore without an account. Each visitor gets their own temporary account, never a
 shared one, deleted after 7 days. It starts with sample check-ins. Demo photos are never stored.
-Signing up from a demo keeps the same account and the visitor's own check-ins; samples are removed.
+Signing up from a demo keeps the same account and the visitor's own check-ins and meals; samples are removed.
 
 ## Style
 A dark hardcore-gym look: near-black background, bold condensed headings, one loud accent

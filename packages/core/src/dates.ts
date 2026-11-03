@@ -36,6 +36,11 @@ export function weekdayOf(date: string): number {
   return new Date(toDayNumber(date) * MS_PER_DAY).getUTCDay();
 }
 
+/** The hour, 0 to 23, at a given moment in an IANA timezone. */
+export function hourInTimezone(moment: Date, timezone: string): number {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "numeric", hourCycle: "h23" }).format(moment));
+}
+
 /** The "YYYY-MM-DD" date at a given moment in an IANA timezone. */
 export function dateInTimezone(moment: Date, timezone: string): string {
   // en-CA is the locale whose dates are written YYYY-MM-DD.

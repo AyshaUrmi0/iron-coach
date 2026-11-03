@@ -12,6 +12,7 @@ export interface User {
   readonly bodyType: "male" | "female";
   readonly startBody: StartBody;
   readonly weeklyGoal: number;
+  readonly proteinGoal: number;
   readonly language: Language;
   readonly timezone: string;
   readonly isDemo: boolean;
@@ -75,6 +76,10 @@ export function patch<T>(path: string, data: unknown): Promise<T> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+}
+
+export function del<T>(path: string): Promise<T> {
+  return request<T>(path, { method: "DELETE" });
 }
 
 export function postForm<T>(path: string, form: FormData): Promise<T> {
