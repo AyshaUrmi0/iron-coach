@@ -131,6 +131,7 @@ The body follows the average of the six muscle scores (`avatarFrame` in `package
 | DELETE | /api/meals/:id | Delete one of your own meals |
 | GET | /api/state | Muscles, streak, skip days, title, roast level and today's roast |
 | GET | /api/selfies/:id | Returns the selfie to its owner only |
+| POST | /api/machines/detect | Sends a back-camera photo to Gemini and returns what it saw. Nothing is saved. Selfies never go here |
 
 ## Roadmap
 

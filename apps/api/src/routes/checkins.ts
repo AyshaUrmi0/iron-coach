@@ -15,7 +15,7 @@ import {
 const MAX_SELFIE_BYTES = 4_194_304; // 4 MB: Vercel refuses request bodies over 4.5 MB
 
 // Kept in memory so nothing reaches the disk until the upload has passed every check.
-const upload = multer({
+export const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_SELFIE_BYTES, files: 1 },
 });
