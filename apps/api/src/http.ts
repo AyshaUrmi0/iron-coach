@@ -11,6 +11,7 @@ export const HTTP_NOT_FOUND = 404;
 export const HTTP_CONFLICT = 409;
 export const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_SERVER_ERROR = 500;
+export const HTTP_BAD_GATEWAY = 502;
 const MONGO_DUPLICATE_KEY = 11_000;
 
 export function isDuplicateKeyError(err: unknown): boolean {

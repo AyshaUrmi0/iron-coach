@@ -72,6 +72,10 @@ check "text file posing as a JPEG"    400 "JPEG, PNG or WebP"   "$A" -X POST -F 
 check "6 MB file"                     400 "too large"           "$A" -X POST -F muscles=chest -F "selfie=@$HUGE" "$API/checkins"
 check "wrong file field"              400 "Unexpected file"     "$A" -X POST -F muscles=chest -F "photo=@$PNG" "$API/checkins"
 
+check "machine scan logged out"        401 ""                    "$NOBODY" -X POST -F "photo=@$PNG" "$API/machines/detect"
+check "machine scan, no photo"         400 "photo is required"   "$A" -X POST -F x=1 "$API/machines/detect"
+check "machine scan, not an image"     400 "JPEG, PNG or WebP"   "$A" -X POST -F "photo=@./not-an-image.jpg;type=image/jpeg" "$API/machines/detect"
+
 check "check in, two muscles"         201 '"muscles":["chest","arms"]' "$A" -X POST -F muscles=chest -F muscles=arms -F "selfie=@$PNG" "$API/checkins"
 CHECKIN="$(json_id)"
 assert "response hides selfiePath" sh -c "! grep -q selfiePath '$WORK/body'"

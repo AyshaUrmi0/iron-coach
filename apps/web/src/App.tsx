@@ -9,6 +9,7 @@ import { CheckinPage } from "./pages/CheckinPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { MachineLabPage } from "./pages/MachineLabPage";
 import { MealsPage } from "./pages/MealsPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -81,6 +82,7 @@ export default function App(): ReactElement {
             <Route path="/meals" element={<MealsPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/machine-lab" element={<MachineLabPage />} />
           </Route>
           {import.meta.env.DEV && <Route path="/avatar-lab" element={<AvatarLabPage />} />}
           <Route path="*" element={<Navigate to="/" replace />} />

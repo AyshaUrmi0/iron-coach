@@ -62,9 +62,10 @@ function CoachScreen({ title, line, onRetry }: {
   );
 }
 
-function CameraView({ stream, notice, onCapture }: {
+export function CameraView({ stream, notice, camera = "front", onCapture }: {
   readonly stream: MediaStream | undefined;
   readonly notice: string | undefined;
+  readonly camera?: "front" | "back";
   readonly onCapture: (video: HTMLVideoElement) => void;
 }): ReactElement {
   const video = useRef<HTMLVideoElement>(null);
@@ -81,9 +82,9 @@ function CameraView({ stream, notice, onCapture }: {
         autoPlay
         playsInline
         muted
-        aria-label="Live view from your front camera"
+        aria-label={`Live view from your ${camera} camera`}
         onPlaying={() => setPlaying(true)}
-        className="size-full -scale-x-100 object-cover"
+        className={`size-full object-cover ${camera === "front" ? "-scale-x-100" : ""}`}
       />
       <Link to="/" className="absolute top-4 left-4 bg-plate px-4 py-2.5 font-display text-2xl font-black uppercase">
         Back
