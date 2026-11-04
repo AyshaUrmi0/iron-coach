@@ -2,10 +2,14 @@
   "name": "iron-coach",
   "private": true,
   "packageManager": "pnpm@11.18.0",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2"
+  },
   "scripts": {
-    "dev": "pnpm -r --parallel dev",
+    "dev": "node init && pnpm -r --parallel dev",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "build": "pnpm -r build"
+    "build": "node init && pnpm -r build"
   }
 }

@@ -107,6 +107,16 @@ function Home({ state, roast }: GameState): ReactElement {
           </button>
         )}
 
+        {/* Hidden from demo accounts, because the scan refuses them. */}
+        {user && !user.isDemo && (
+          <Link
+            to="/machine-lab"
+            className="bg-plate p-3 text-center font-display text-2xl font-black uppercase transition-colors hover:text-hazard"
+          >
+            Scan a gym machine
+          </Link>
+        )}
+
         {user && <TodaysProtein user={user} showLink />}
 
         <div className="grid flex-1 gap-5 lg:grid-cols-[14rem_1fr_18rem]">
