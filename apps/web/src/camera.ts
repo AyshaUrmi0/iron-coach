@@ -9,6 +9,12 @@ const FRONT_CAMERA: MediaStreamConstraints = {
   audio: false,
 };
 
+/** Exact, so a phone can't quietly fall back to the front camera. */
+export const BACK_CAMERA: MediaStreamConstraints = {
+  video: { facingMode: { exact: "environment" }, width: { ideal: IDEAL_WIDTH } },
+  audio: false,
+};
+
 export type CameraError = "denied" | "missing" | "insecure" | "failed";
 
 interface Camera {
@@ -27,8 +33,12 @@ function stopCamera(stream: MediaStream): void {
   stream.getTracks().forEach((track) => track.stop());
 }
 
-/** Runs the front camera while enabled, and always switches it off afterwards. Change `attempt` to retry. */
-export function useCamera(enabled: boolean, attempt: number): Camera {
+/** Runs a camera while enabled, and always switches it off afterwards. Change `attempt` to retry. */
+export function useCamera(
+  enabled: boolean,
+  attempt: number,
+  constraints: MediaStreamConstraints = FRONT_CAMERA,
+): Camera {
   const [stream, setStream] = useState<MediaStream>();
   const [error, setError] = useState<CameraError>();
 
@@ -44,7 +54,7 @@ export function useCamera(enabled: boolean, attempt: number): Camera {
     let opened: MediaStream | undefined;
     setError(undefined);
     navigator.mediaDevices
-      .getUserMedia(FRONT_CAMERA)
+      .getUserMedia(constraints)
       .then((started) => {
         // The user may have left while the permission prompt was open.
         if (closed) {
@@ -63,13 +73,13 @@ export function useCamera(enabled: boolean, attempt: number): Camera {
       if (opened) stopCamera(opened);
       setStream(undefined);
     };
-  }, [enabled, attempt]);
+  }, [enabled, attempt, constraints]);
 
   return { stream, error };
 }
 
-/** The photo is flipped like the live view, so it looks the way the user saw it. Small enough for the 4 MB upload limit. */
-export function captureFrame(video: HTMLVideoElement): Promise<Blob> {
+/** A mirrored photo is flipped like the live selfie view, so it looks the way the user saw it. Small enough for the 4 MB upload limit. */
+export function captureFrame(video: HTMLVideoElement, mirrored = true): Promise<Blob> {
   const scale = Math.min(1, MAX_PHOTO_SIDE / Math.max(video.videoWidth, video.videoHeight));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(video.videoWidth * scale);
@@ -77,8 +87,10 @@ export function captureFrame(video: HTMLVideoElement): Promise<Blob> {
 
   const context = canvas.getContext("2d");
   if (!context) return Promise.reject(new Error("Can't draw the photo."));
-  context.translate(canvas.width, 0);
-  context.scale(-1, 1);
+  if (mirrored) {
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+  }
   context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
   return new Promise((resolve, reject) => {

@@ -13,6 +13,7 @@ const envSchema = z.object({
   AI_ROASTS_ENABLED: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

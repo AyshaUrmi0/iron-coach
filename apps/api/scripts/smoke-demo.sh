@@ -63,6 +63,7 @@ same "demo starts with 4 sample check-ins" "$(sample_count "$DEMO")" 4
 check "demo login with no password works"   401 "Wrong email"  demo.jar -H "$JSON" -d "{\"email\":\"$(demo_email "$DEMO")\",\"password\":\"!demo-account-has-no-password\"}" "$API/auth/login"
 
 check "demo can change settings"            200 '"weeklyGoal":3' demo.jar -X PATCH -H "$JSON" -d '{"bodyType":"female"}' "$API/me"
+check "demo can't scan a machine"          400 "Demo accounts" demo.jar -X POST -F "photo=@selfie.png" "$API/machines/detect"
 check "demo check-in"                       201 '"muscles":["legs"]' demo.jar -X POST -F muscles=legs -F "selfie=@selfie.png" "$API/checkins"
 CHECKIN="$(grep -o '"id":"[0-9a-f]\{24\}"' body | head -1 | cut -d'"' -f4)"
 check "comeback after the sample skip days" 200 '"roastLevel":"comeback"' demo.jar "$API/state"
