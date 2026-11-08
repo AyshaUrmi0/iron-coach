@@ -3,17 +3,9 @@ import { useEffect, useState } from "react";
 const IDEAL_WIDTH = 1280;
 const MAX_PHOTO_SIDE = 1280;
 const JPEG_QUALITY = 0.85;
-
-const FRONT_CAMERA: MediaStreamConstraints = {
-  video: { facingMode: "user", width: { ideal: IDEAL_WIDTH } },
-  audio: false,
-};
-
-/** Exact, so a phone can't quietly fall back to the front camera. */
-export const BACK_CAMERA: MediaStreamConstraints = {
-  video: { facingMode: { exact: "environment" }, width: { ideal: IDEAL_WIDTH } },
-  audio: false,
-};
+const VIDEO_SIZE = { width: { ideal: IDEAL_WIDTH } };
+// Android Chrome names cameras like "camera2 0, facing back", iPhones like "Back Camera".
+const BACK_LABEL = /back|rear|environment/i;
 
 export type CameraError = "denied" | "missing" | "insecure" | "failed";
 
@@ -33,11 +25,37 @@ function stopCamera(stream: MediaStream): void {
   stream.getTracks().forEach((track) => track.stop());
 }
 
+function openFrontCamera(): Promise<MediaStream> {
+  return navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", ...VIDEO_SIZE }, audio: false });
+}
+
+/**
+ * Some Android phones open the selfie camera even when asked for the back one, so the camera's
+ * name is checked too. Each switch moves on to the next camera, for phones whose names don't help.
+ */
+export async function openBackCamera(switches = 0): Promise<MediaStream> {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: "environment" }, ...VIDEO_SIZE },
+    audio: false,
+  });
+  const current = stream.getVideoTracks()[0];
+  // Camera names are only filled in once the camera is allowed, which the request above has done.
+  const devices = await navigator.mediaDevices.enumerateDevices().catch(() => []);
+  const cameras = devices.filter((device) => device.kind === "videoinput");
+  const backIndex = cameras.findIndex((camera) => BACK_LABEL.test(camera.label));
+  if (switches === 0 && (backIndex < 0 || BACK_LABEL.test(current?.label ?? ""))) return stream;
+
+  const pick = cameras[(Math.max(backIndex, 0) + switches) % cameras.length];
+  if (!pick || pick.deviceId === current?.getSettings().deviceId) return stream;
+  stopCamera(stream);
+  return navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: pick.deviceId }, ...VIDEO_SIZE }, audio: false });
+}
+
 /** Runs a camera while enabled, and always switches it off afterwards. Change `attempt` to retry. */
 export function useCamera(
   enabled: boolean,
   attempt: number,
-  constraints: MediaStreamConstraints = FRONT_CAMERA,
+  open: () => Promise<MediaStream> = openFrontCamera,
 ): Camera {
   const [stream, setStream] = useState<MediaStream>();
   const [error, setError] = useState<CameraError>();
@@ -53,8 +71,7 @@ export function useCamera(
     let closed = false;
     let opened: MediaStream | undefined;
     setError(undefined);
-    navigator.mediaDevices
-      .getUserMedia(constraints)
+    open()
       .then((started) => {
         // The user may have left while the permission prompt was open.
         if (closed) {
@@ -73,7 +90,7 @@ export function useCamera(
       if (opened) stopCamera(opened);
       setStream(undefined);
     };
-  }, [enabled, attempt, constraints]);
+  }, [enabled, attempt, open]);
 
   return { stream, error };
 }
