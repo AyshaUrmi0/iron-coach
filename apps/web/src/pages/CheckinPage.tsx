@@ -100,7 +100,7 @@ export function CameraView({ stream, notice, camera = "front", onCapture }: {
         className={`size-full object-cover ${camera === "front" ? "-scale-x-100" : ""}`}
       />
       <Link to="/" className="absolute top-4 left-4 bg-plate px-4 py-2.5 font-display text-2xl font-black uppercase">
-        Back
+        Home
       </Link>
       <div className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 px-4">
         {notice && (
