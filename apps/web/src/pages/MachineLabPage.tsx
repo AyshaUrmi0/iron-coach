@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { ApiError, OFFLINE_MESSAGE, postForm } from "../api";
-import { BACK_CAMERA, captureFrame, useCamera } from "../camera";
+import { captureFrame, openBackCamera, useCamera } from "../camera";
 import { CameraView } from "./CheckinPage";
 
 interface MachineDetection {
@@ -24,7 +24,9 @@ export function MachineLabPage(): ReactElement {
   const [photoUrl, setPhotoUrl] = useState<string>();
   const [attempt, setAttempt] = useState(0);
   const [notice, setNotice] = useState<string>();
-  const camera = useCamera(!photoUrl, attempt, BACK_CAMERA);
+  const [switches, setSwitches] = useState(0);
+  const openCamera = useCallback(() => openBackCamera(switches), [switches]);
+  const camera = useCamera(!photoUrl, attempt, openCamera);
   const detection = useMutation({ mutationFn: detect });
 
   useEffect(() => {
@@ -95,11 +97,24 @@ export function MachineLabPage(): ReactElement {
     );
   }
   return (
-    <CameraView
-      stream={camera.stream}
-      notice={notice ?? PHOTO_WARNING}
-      camera="back"
-      onCapture={(video) => void handleCapture(video)}
-    />
+    <>
+      <CameraView
+        stream={camera.stream}
+        notice={notice ?? PHOTO_WARNING}
+        camera="back"
+        onCapture={(video) => void handleCapture(video)}
+      />
+      <div className="fixed top-4 right-4 flex max-w-[60%] flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={() => setSwitches(switches + 1)}
+          className="cursor-pointer bg-plate px-4 py-2.5 font-display text-2xl font-black uppercase transition-colors hover:text-hazard"
+        >
+          Switch camera
+        </button>
+        {/* The camera's own name, so a wrong camera can be reported. */}
+        <p className="bg-mat/70 px-2 py-1 text-right text-sm">{camera.stream?.getVideoTracks()[0]?.label}</p>
+      </div>
+    </>
   );
 }
