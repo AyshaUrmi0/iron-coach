@@ -1,6 +1,6 @@
 import { MUSCLE_GROUPS, type MuscleGroup, type Muscles } from "@iron-coach/core";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactElement } from "react";
 import { Link, useNavigate } from "react-router";
 import { ApiError, OFFLINE_MESSAGE } from "../api";
 import { useMe } from "../auth";
@@ -70,10 +70,23 @@ export function CameraView({ stream, notice, camera = "front", onCapture }: {
 }): ReactElement {
   const video = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [playError, setPlayError] = useState<string>();
+
+  const startVideo = useCallback(async (): Promise<void> => {
+    try {
+      await video.current?.play();
+      setPlayError(undefined);
+    } catch (err) {
+      setPlayError(err instanceof Error ? err.name : "unknown error");
+    }
+  }, []);
 
   useEffect(() => {
-    if (video.current) video.current.srcObject = stream ?? null;
-  }, [stream]);
+    if (!video.current) return;
+    video.current.srcObject = stream ?? null;
+    // Autoplay alone can leave a black screen on phones that block it, so ask, and offer a tap if that fails too.
+    if (stream) void startVideo();
+  }, [stream, startVideo]);
 
   return (
     <main className="fixed inset-0 bg-mat">
@@ -93,6 +106,20 @@ export function CameraView({ stream, notice, camera = "front", onCapture }: {
         {notice && (
           <p role="alert" className="bg-hazard px-3.5 py-2.5 font-semibold text-mat">
             {notice}
+          </p>
+        )}
+        {stream && !playing && (
+          <button
+            type="button"
+            onClick={() => void startVideo()}
+            className="cursor-pointer bg-plate px-6 py-3 font-display text-3xl font-black uppercase transition-colors hover:text-hazard"
+          >
+            Start camera
+          </button>
+        )}
+        {playError && !playing && (
+          <p role="alert" className="bg-hazard px-3.5 py-2.5 font-semibold text-mat">
+            The camera video won't play: {playError}
           </p>
         )}
         <button
