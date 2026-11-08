@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --env-file-if-exists=.env src/local.ts",
-    "start": "tsx --env-file-if-exists=.env src/local.ts",
-    "build": "tsc --noEmit",
+    "dev": "node init && tsx watch --env-file-if-exists=.env src/local.ts",
+    "start": "node init && tsx --env-file-if-exists=.env src/local.ts",
+    "build": "node init && tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
